@@ -1,7 +1,7 @@
 import Header from '@/components/Header';
 import { getTranslations } from 'next-intl/server';
-import { ddb, TableName } from '@remote-swe-agents/agent-core/aws';
-import { calculateCost, getSessions, readMetadata } from '@remote-swe-agents/agent-core/lib';
+import { ddb, TableName } from '@remote-swe-agents-azure/agent-core/aws';
+import { calculateCost, getSessions, readMetadata } from '@remote-swe-agents-azure/agent-core/lib';
 import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 import CostSummary from './components/CostSummary';
 import CostBreakdown from './components/CostBreakdown';

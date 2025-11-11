@@ -1,4 +1,4 @@
-# @remote-swe-agents/agent-core
+# @remote-swe-agents-azure/agent-core
 
 This package contains common code shared between the slack-bolt-app and worker packages in the remote-swe-agents monorepo.
 
@@ -12,12 +12,12 @@ Import the shared utilities in your code:
 
 ```typescript
 // Import specific utilities
-import { s3, BucketName, getBytesFromKey } from '@remote-swe-agents/agent-core';
-import { ddb, TableName } from '@remote-swe-agents/agent-core';
-import { createSlackApp, sendMessage, sendImageWithMessage } from '@remote-swe-agents/agent-core';
+import { s3, BucketName, getBytesFromKey } from '@remote-swe-agents-azure/agent-core';
+import { ddb, TableName } from '@remote-swe-agents-azure/agent-core';
+import { createSlackApp, sendMessage, sendImageWithMessage } from '@remote-swe-agents-azure/agent-core';
 
 // Or import everything
-import * as common from '@remote-swe-agents/agent-core';
+import * as common from '@remote-swe-agents-azure/agent-core';
 ```
 
 ## Available Utilities

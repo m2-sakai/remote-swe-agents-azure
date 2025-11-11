@@ -5,7 +5,7 @@ import {
   getSession,
   getTodoList,
   noOpFiltering,
-} from '@remote-swe-agents/agent-core/lib';
+} from '@remote-swe-agents-azure/agent-core/lib';
 import SessionPageClient from './component/SessionPageClient';
 import { MessageView } from './component/MessageList';
 import { notFound } from 'next/navigation';

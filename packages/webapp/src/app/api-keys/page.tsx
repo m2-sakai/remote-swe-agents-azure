@@ -1,6 +1,6 @@
 import Header from '@/components/Header';
-import { getApiKeys } from '@remote-swe-agents/agent-core/lib';
-import { ApiKeyItem, modelTypeList } from '@remote-swe-agents/agent-core/schema';
+import { getApiKeys } from '@remote-swe-agents-azure/agent-core/lib';
+import { ApiKeyItem, modelTypeList } from '@remote-swe-agents-azure/agent-core/schema';
 import { formatDistanceToNow } from 'date-fns';
 import { getTranslations } from 'next-intl/server';
 import ApiKeyClientActions from './components/ApiKeyClientActions';

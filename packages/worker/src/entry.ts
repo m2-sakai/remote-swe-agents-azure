@@ -5,7 +5,7 @@ import { fromNodeProviderChain } from '@aws-sdk/credential-providers';
 import './common/signal-handler';
 import { setKillTimer, pauseKillTimer, restartKillTimer } from './common/kill-timer';
 import { CancellationToken } from './common/cancellation-token';
-import { sendSystemMessage, updateInstanceStatus, workerEventSchema } from '@remote-swe-agents/agent-core/lib';
+import { sendSystemMessage, updateInstanceStatus, workerEventSchema } from '@remote-swe-agents-azure/agent-core/lib';
 import { updateAgentStatusWithEvent } from './common/status';
 import { refreshSession } from './common/refresh-session';
 

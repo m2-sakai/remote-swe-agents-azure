@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, MessageSquare, Clock, DollarSign, Users, EyeOff } from 'lucide-react';
 import { useEventBus } from '@/hooks/use-event-bus';
 import { useCallback, useState, useEffect } from 'react';
-import { SessionItem, webappEventSchema } from '@remote-swe-agents/agent-core/schema';
+import { SessionItem, webappEventSchema } from '@remote-swe-agents-azure/agent-core/schema';
 import { getUnifiedStatus } from '@/utils/session-status';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';

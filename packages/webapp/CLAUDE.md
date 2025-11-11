@@ -3,6 +3,7 @@
 ### Server Component Best Practices
 
 1. **Define page components as async functions**
+
    ```typescript
    // Good example
    export default async function MyPage() {
@@ -22,7 +23,7 @@
      const data = await readDataFromDB();
      return <MyComponent initialData={data} />;
    }
-   
+
    // Bad example - Using Server Action for initial rendering
    export default function MyPage() {
      const { data } = useAction(getDataAction);
@@ -40,7 +41,7 @@
      const product = await getProduct(id);
      return <ProductClientUI product={product} />;
    }
-   
+
    // Child: Client Component
    'use client';
    export function ProductClientUI({ product }) {
@@ -57,12 +58,13 @@
 When implementing server-side functionality in the webapp, always use Next.js server actions instead of API Routes:
 
 1. **Server Action Creation Pattern**:
+
    ```typescript
    'use server';
-   
+
    import { authActionClient } from '@/lib/safe-action';
    import { myActionSchema } from './schemas';
-   
+
    export const myServerAction = authActionClient
      .schema(myActionSchema)
      .action(async ({ parsedInput: { param1, param2 } }) => {
@@ -72,10 +74,11 @@ When implementing server-side functionality in the webapp, always use Next.js se
    ```
 
 2. **Action Schema Definition**:
+
    ```typescript
    // schemas.ts
    import { z } from 'zod';
-   
+
    export const myActionSchema = z.object({
      param1: z.string(),
      param2: z.number(),
@@ -93,26 +96,25 @@ When implementing server-side functionality in the webapp, always use Next.js se
    ```typescript
    // Good example
    'use server';
-   
-   import { writeData } from '@remote-swe-agents/agent-core/lib';
+
+   import { writeData } from '@remote-swe-agents-azure/agent-core/lib';
    import { authActionClient } from '@/lib/safe-action';
-   
-   export const saveDataAction = authActionClient
-     .schema(saveDataSchema)
-     .action(async ({ parsedInput }) => {
-       // Use common function directly
-       await writeData(parsedInput);
-       return { success: true };
-     });
+
+   export const saveDataAction = authActionClient.schema(saveDataSchema).action(async ({ parsedInput }) => {
+     // Use common function directly
+     await writeData(parsedInput);
+     return { success: true };
+   });
    ```
 
 5. **Client-side Usage with useAction hook**:
+
    ```typescript
    'use client';
-   
+
    import { useAction } from 'next-safe-action/hooks';
    import { myServerAction } from '../actions';
-   
+
    // In component:
    const { execute, status, result } = useAction(myServerAction, {
      onSuccess: (data) => {
@@ -122,9 +124,9 @@ When implementing server-side functionality in the webapp, always use Next.js se
        // Handle error
        const errorMessage = error.error?.serverError || 'An error occurred';
        toast(errorMessage);
-     }
+     },
    });
-   
+
    const handleSubmit = () => {
      execute({ param1: 'value', param2: 42 });
    };
@@ -136,7 +138,7 @@ When implementing server-side functionality in the webapp, always use Next.js se
 - **ALWAYS** handle both success and error cases in client-side code
 - Keep database access code in server actions, not in client components
 - Use Zod schemas for validation in server actions
-- When dealing with DynamoDB, import from `@remote-swe-agents/agent-core/aws` and use directly in server actions
+- When dealing with DynamoDB, import from `@remote-swe-agents-azure/agent-core/aws` and use directly in server actions
 - The auth middleware automatically protects server actions through `authActionClient`
 - **Data Responsibility Distribution**:
   - Fetch initial data in server components
@@ -152,9 +154,10 @@ When implementing server-side functionality in the webapp, always use Next.js se
 - If writing code comments, ALWAYS USE English language.
 
 ## i18n (Internationalization)
+
 - Whenever you add labels in the UI, use next-i18n.
-    ```ts
-    const t = await getTranslations('section');
-    t('title')
-    ```
+  ```ts
+  const t = await getTranslations('section');
+  t('title');
+  ```
 - labels are maintained in Japanese and English. Edit src/messages/en.json and ja.json accordingly.

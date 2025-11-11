@@ -19,7 +19,7 @@ import {
   getAvailableModelTypes,
   GlobalPreferences,
   modelConfigs,
-} from '@remote-swe-agents/agent-core/schema';
+} from '@remote-swe-agents-azure/agent-core/schema';
 
 interface NewSessionFormProps {
   templates: PromptTemplate[];

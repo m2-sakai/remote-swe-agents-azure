@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 import { useScrollPosition } from '@/hooks/use-scroll-position';
 import { MessageGroupComponent } from './MessageGroup';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ModelType } from '@remote-swe-agents/agent-core/schema';
+import { ModelType } from '@remote-swe-agents-azure/agent-core/schema';
 
 export type MessageView = {
   id: string;

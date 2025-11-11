@@ -1,6 +1,6 @@
 'use server';
 
-import { updateSessionVisibility } from '@remote-swe-agents/agent-core/lib';
+import { updateSessionVisibility } from '@remote-swe-agents-azure/agent-core/lib';
 import { authActionClient } from '@/lib/safe-action';
 import { z } from 'zod';
 

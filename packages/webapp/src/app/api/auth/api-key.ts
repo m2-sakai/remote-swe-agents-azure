@@ -1,4 +1,4 @@
-import { validateApiKey } from '@remote-swe-agents/agent-core/lib';
+import { validateApiKey } from '@remote-swe-agents-azure/agent-core/lib';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**

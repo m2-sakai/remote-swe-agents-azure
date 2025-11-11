@@ -16,7 +16,7 @@ import {
   AgentStatus,
   InstanceStatus,
   GlobalPreferences,
-} from '@remote-swe-agents/agent-core/schema';
+} from '@remote-swe-agents-azure/agent-core/schema';
 import { useTranslations } from 'next-intl';
 import TodoList from './TodoList';
 import { getUnifiedStatus } from '@/utils/session-status';

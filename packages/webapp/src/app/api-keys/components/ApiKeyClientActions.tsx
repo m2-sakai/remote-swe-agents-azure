@@ -3,7 +3,7 @@
 import { createApiKeyAction, deleteApiKeyAction, listApiKeysAction } from '@/actions/api-key';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ApiKeyItem } from '@remote-swe-agents/agent-core/schema';
+import { ApiKeyItem } from '@remote-swe-agents-azure/agent-core/schema';
 import { useAction } from 'next-safe-action/hooks';
 import { useHookFormAction } from '@next-safe-action/adapter-react-hook-form/hooks';
 import { zodResolver } from '@hookform/resolvers/zod';

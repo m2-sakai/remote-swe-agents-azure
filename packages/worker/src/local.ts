@@ -1,6 +1,6 @@
 import { createInterface } from 'readline';
 import { onMessageReceived } from './agent';
-import { renderUserMessage, saveConversationHistory } from '@remote-swe-agents/agent-core/lib';
+import { renderUserMessage, saveConversationHistory } from '@remote-swe-agents-azure/agent-core/lib';
 import { CancellationToken } from './common/cancellation-token';
 import './common/signal-handler';
 import { randomBytes } from 'crypto';

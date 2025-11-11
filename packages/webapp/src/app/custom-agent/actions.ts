@@ -2,7 +2,7 @@
 
 import { authActionClient } from '@/lib/safe-action';
 import { upsertCustomAgentSchema, deleteCustomAgentSchema } from './schemas';
-import { createCustomAgent, updateCustomAgent, deleteCustomAgent } from '@remote-swe-agents/agent-core/lib';
+import { createCustomAgent, updateCustomAgent, deleteCustomAgent } from '@remote-swe-agents-azure/agent-core/lib';
 import { revalidatePath } from 'next/cache';
 
 export const upsertCustomAgentAction = authActionClient

@@ -20,10 +20,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { EmptyMcpConfig, getAvailableModelTypes, modelConfigs } from '@remote-swe-agents/agent-core/schema';
+import { EmptyMcpConfig, getAvailableModelTypes, modelConfigs } from '@remote-swe-agents-azure/agent-core/schema';
 import { upsertCustomAgentAction, deleteCustomAgentAction } from '../actions';
 import { upsertCustomAgentSchema } from '../schemas';
-import type { CustomAgent } from '@remote-swe-agents/agent-core/schema';
+import type { CustomAgent } from '@remote-swe-agents-azure/agent-core/schema';
 import { Form, FormControl, FormField } from '@/components/ui/form';
 import { useRouter } from 'next/navigation';
 

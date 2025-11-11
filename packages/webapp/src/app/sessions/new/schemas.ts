@@ -1,4 +1,4 @@
-import { modelTypeSchema } from '@remote-swe-agents/agent-core/schema';
+import { modelTypeSchema } from '@remote-swe-agents-azure/agent-core/schema';
 import { z } from 'zod';
 
 export const createNewWorkerSchema = z.object({

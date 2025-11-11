@@ -3,15 +3,15 @@
 import { createNewWorkerSchema } from './schemas';
 import { authActionClient } from '@/lib/safe-action';
 import { TransactWriteCommand } from '@aws-sdk/lib-dynamodb';
-import { ddb, TableName } from '@remote-swe-agents/agent-core/aws';
+import { ddb, TableName } from '@remote-swe-agents-azure/agent-core/aws';
 import {
   getCustomAgent,
   getOrCreateWorkerInstance,
   renderUserMessage,
   updateInstanceStatus,
-} from '@remote-swe-agents/agent-core/lib';
-import { sendWorkerEvent } from '@remote-swe-agents/agent-core/lib';
-import { MessageItem, SessionItem } from '@remote-swe-agents/agent-core/schema';
+} from '@remote-swe-agents-azure/agent-core/lib';
+import { sendWorkerEvent } from '@remote-swe-agents-azure/agent-core/lib';
+import { MessageItem, SessionItem } from '@remote-swe-agents-azure/agent-core/schema';
 import { randomBytes } from 'crypto';
 import { redirect } from 'next/navigation';
 

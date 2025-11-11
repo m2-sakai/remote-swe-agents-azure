@@ -21,9 +21,9 @@ import {
   updateSessionTitle,
   getPreferences,
   getCustomAgent,
-} from '@remote-swe-agents/agent-core/lib';
+} from '@remote-swe-agents-azure/agent-core/lib';
 import pRetry, { AbortError } from 'p-retry';
-import { bedrockConverse } from '@remote-swe-agents/agent-core/lib';
+import { bedrockConverse } from '@remote-swe-agents-azure/agent-core/lib';
 import { getMcpToolSpecs, tryExecuteMcpTool } from './mcp';
 import {
   addIssueCommentTool,
@@ -39,14 +39,14 @@ import {
   sendImageTool,
   todoInitTool,
   todoUpdateTool,
-} from '@remote-swe-agents/agent-core/tools';
+} from '@remote-swe-agents-azure/agent-core/tools';
 import { findRepositoryKnowledge } from './lib/knowledge';
-import { sendWebappEvent } from '@remote-swe-agents/agent-core/lib';
+import { sendWebappEvent } from '@remote-swe-agents-azure/agent-core/lib';
 import { CancellationToken } from '../common/cancellation-token';
 import { updateAgentStatusWithEvent } from '../common/status';
 import { refreshSession } from '../common/refresh-session';
 import { DefaultAgent } from './lib/default-agent';
-import { EmptyMcpConfig, mcpConfigSchema } from '@remote-swe-agents/agent-core/schema';
+import { EmptyMcpConfig, mcpConfigSchema } from '@remote-swe-agents-azure/agent-core/schema';
 
 const agentLoop = async (workerId: string, cancellationToken: CancellationToken) => {
   const session = await getSession(workerId);

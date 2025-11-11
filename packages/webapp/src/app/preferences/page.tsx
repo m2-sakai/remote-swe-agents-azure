@@ -1,5 +1,5 @@
 import Header from '@/components/Header';
-import { readCommonPrompt, getPreferences } from '@remote-swe-agents/agent-core/lib';
+import { readCommonPrompt, getPreferences } from '@remote-swe-agents-azure/agent-core/lib';
 import PromptForm from './components/PromptForm';
 import PreferenceSection from './components/PreferenceSection';
 import GlobalPreferencesForm from './components/GlobalPreferencesForm';

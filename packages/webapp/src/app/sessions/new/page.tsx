@@ -3,10 +3,10 @@ import { ArrowLeft, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import NewSessionForm from './NewSessionForm';
-import { ddb, TableName } from '@remote-swe-agents/agent-core/aws';
+import { ddb, TableName } from '@remote-swe-agents-azure/agent-core/aws';
 import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { PromptTemplate } from '@/app/sessions/new/schemas';
-import { getCustomAgents, getPreferences } from '@remote-swe-agents/agent-core/lib';
+import { getCustomAgents, getPreferences } from '@remote-swe-agents-azure/agent-core/lib';
 
 export default async function NewSessionPage() {
   const t = await getTranslations('new_session');

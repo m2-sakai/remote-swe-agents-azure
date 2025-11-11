@@ -1,4 +1,4 @@
-import { ec2 } from '@remote-swe-agents/agent-core/aws';
+import { ec2 } from '@remote-swe-agents-azure/agent-core/aws';
 import { StopInstancesCommand } from '@aws-sdk/client-ec2';
 
 const workerRuntime = process.env.WORKER_RUNTIME ?? 'ec2';

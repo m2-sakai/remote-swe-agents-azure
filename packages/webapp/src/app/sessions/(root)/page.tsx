@@ -1,5 +1,5 @@
 import Header from '@/components/Header';
-import { getSessions } from '@remote-swe-agents/agent-core/lib';
+import { getSessions } from '@remote-swe-agents-azure/agent-core/lib';
 import { RefreshOnFocus } from '@/components/RefreshOnFocus';
 import SessionsList from './components/SessionsList';
 import { getSession } from '@/lib/auth';

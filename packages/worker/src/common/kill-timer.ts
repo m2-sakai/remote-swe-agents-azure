@@ -1,4 +1,4 @@
-import { sendSystemMessage, updateInstanceStatus } from '@remote-swe-agents/agent-core/lib';
+import { sendSystemMessage, updateInstanceStatus } from '@remote-swe-agents-azure/agent-core/lib';
 import { stopMyself } from './ec2';
 import { randomBytes } from 'crypto';
 

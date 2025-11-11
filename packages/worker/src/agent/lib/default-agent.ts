@@ -1,4 +1,4 @@
-import { CustomAgent } from '@remote-swe-agents/agent-core/schema';
+import { CustomAgent } from '@remote-swe-agents-azure/agent-core/schema';
 import {
   addIssueCommentTool,
   ciTool,
@@ -14,7 +14,7 @@ import {
   sendImageTool,
   todoInitTool,
   todoUpdateTool,
-} from '@remote-swe-agents/agent-core/tools';
+} from '@remote-swe-agents-azure/agent-core/tools';
 import { readFileSync } from 'fs';
 
 export const DefaultAgent: CustomAgent = {

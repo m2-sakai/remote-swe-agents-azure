@@ -2,8 +2,8 @@
 
 import { authActionClient } from '@/lib/safe-action';
 import { savePromptSchema } from './schemas';
-import { writeCommonPrompt, updatePreferences } from '@remote-swe-agents/agent-core/lib';
-import { updateGlobalPreferenceSchema } from '@remote-swe-agents/agent-core/schema';
+import { writeCommonPrompt, updatePreferences } from '@remote-swe-agents-azure/agent-core/lib';
+import { updateGlobalPreferenceSchema } from '@remote-swe-agents-azure/agent-core/schema';
 
 export const updateAdditionalSystemPrompt = authActionClient
   .inputSchema(savePromptSchema)

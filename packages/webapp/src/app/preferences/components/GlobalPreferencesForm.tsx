@@ -11,7 +11,7 @@ import {
   ModelType,
   getAvailableModelTypes,
   modelConfigs,
-} from '@remote-swe-agents/agent-core/schema';
+} from '@remote-swe-agents-azure/agent-core/schema';
 import { useState } from 'react';
 
 interface GlobalPreferencesFormProps {

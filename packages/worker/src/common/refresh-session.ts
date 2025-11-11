@@ -1,4 +1,4 @@
-import { getSession, setSlackDestination } from '@remote-swe-agents/agent-core/lib';
+import { getSession, setSlackDestination } from '@remote-swe-agents-azure/agent-core/lib';
 
 /**
  * Set required global variables for the session (this is dirty but at least is working...)

@@ -1,4 +1,4 @@
-import { AgentStatus, InstanceStatus } from '@remote-swe-agents/agent-core/schema';
+import { AgentStatus, InstanceStatus } from '@remote-swe-agents-azure/agent-core/schema';
 
 export type StatusI18nKey =
   | 'agentStatus.completed'

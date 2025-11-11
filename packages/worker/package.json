@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.7.0",
-    "@remote-swe-agents/agent-core": "file:../agent-core",
+    "@remote-swe-agents-azure/agent-core": "file:../agent-core",
     "express": "^5.1.0",
     "p-retry": "^6.2.1",
     "playwright": "^1.55.1",

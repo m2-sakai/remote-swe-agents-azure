@@ -1,4 +1,4 @@
-import { agentStatusSchema, modelTypeSchema } from '@remote-swe-agents/agent-core/schema';
+import { agentStatusSchema, modelTypeSchema } from '@remote-swe-agents-azure/agent-core/schema';
 import { z } from 'zod';
 
 export const sendMessageToAgentSchema = z.object({

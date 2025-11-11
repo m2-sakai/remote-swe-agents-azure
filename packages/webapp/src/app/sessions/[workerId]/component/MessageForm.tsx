@@ -12,7 +12,7 @@ import { MessageView } from './MessageList';
 import { useTranslations } from 'next-intl';
 import ImageUploader from '@/components/ImageUploader';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ModelType, getAvailableModelTypes, modelConfigs } from '@remote-swe-agents/agent-core/schema';
+import { ModelType, getAvailableModelTypes, modelConfigs } from '@remote-swe-agents-azure/agent-core/schema';
 
 type MessageFormProps = {
   onSubmit: (message: MessageView) => void;

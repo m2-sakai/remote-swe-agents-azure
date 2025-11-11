@@ -1,4 +1,4 @@
-import { updateSessionAgentStatus, sendWebappEvent } from '@remote-swe-agents/agent-core/lib';
+import { updateSessionAgentStatus, sendWebappEvent } from '@remote-swe-agents-azure/agent-core/lib';
 
 /**
  * Updates the agent status and sends a corresponding webapp event

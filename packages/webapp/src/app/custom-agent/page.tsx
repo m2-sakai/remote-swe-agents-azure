@@ -10,8 +10,8 @@ import {
   ciTool,
   commandExecutionTool,
   createPRTool,
-} from '@remote-swe-agents/agent-core/tools';
-import { getCustomAgents } from '@remote-swe-agents/agent-core/lib';
+} from '@remote-swe-agents-azure/agent-core/tools';
+import { getCustomAgents } from '@remote-swe-agents-azure/agent-core/lib';
 
 export const dynamic = 'force-dynamic';
 

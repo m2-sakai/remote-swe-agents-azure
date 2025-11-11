@@ -1,4 +1,4 @@
-// import { Tool, ToolResultContentBlock } from '@aws-sdk/client-bedrock-runtime';
+import { Tool, ToolResultContentBlock } from '@aws-sdk/client-bedrock-runtime';
 import z, { ZodType } from 'zod';
 import { GlobalPreferences } from '../../schema';
 

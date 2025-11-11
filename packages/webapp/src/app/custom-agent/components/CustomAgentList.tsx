@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
-import type { CustomAgent } from '@remote-swe-agents/agent-core/schema';
-import { mcpConfigSchema } from '@remote-swe-agents/agent-core/schema';
+import type { CustomAgent } from '@remote-swe-agents-azure/agent-core/schema';
+import { mcpConfigSchema } from '@remote-swe-agents-azure/agent-core/schema';
 import CustomAgentForm from './CustomAgentForm';
 
 type CustomAgentListProps = {

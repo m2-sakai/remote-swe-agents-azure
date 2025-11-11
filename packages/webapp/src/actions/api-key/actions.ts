@@ -1,7 +1,7 @@
 'use server';
 
-import { createApiKey, deleteApiKey, getApiKeys } from '@remote-swe-agents/agent-core/lib';
-import { ApiKeyItem } from '@remote-swe-agents/agent-core/schema';
+import { createApiKey, deleteApiKey, getApiKeys } from '@remote-swe-agents-azure/agent-core/lib';
+import { ApiKeyItem } from '@remote-swe-agents-azure/agent-core/schema';
 import { authActionClient } from '@/lib/safe-action';
 import { createApiKeySchema, deleteApiKeySchema } from './schemas';
 

@@ -7,12 +7,12 @@ import {
   getConversationHistory,
   noOpFiltering,
   getOrCreateWorkerInstance,
-} from '@remote-swe-agents/agent-core/lib';
-import { ddb, TableName } from '@remote-swe-agents/agent-core/aws';
+} from '@remote-swe-agents-azure/agent-core/lib';
+import { ddb, TableName } from '@remote-swe-agents-azure/agent-core/aws';
 import { PutCommand } from '@aws-sdk/lib-dynamodb';
 import { z } from 'zod';
 import { extractUserMessage, formatMessage } from '@/lib/message-formatter';
-import { MessageItem, modelTypeSchema } from '@remote-swe-agents/agent-core/schema';
+import { MessageItem, modelTypeSchema } from '@remote-swe-agents-azure/agent-core/schema';
 
 // Schema for request validation
 const sendMessageSchema = z.object({

@@ -1,10 +1,10 @@
 import { validateApiKeyMiddleware } from '../auth/api-key';
 import { NextRequest, NextResponse } from 'next/server';
-import { getOrCreateWorkerInstance, sendWorkerEvent } from '@remote-swe-agents/agent-core/lib';
-import { ddb, TableName } from '@remote-swe-agents/agent-core/aws';
+import { getOrCreateWorkerInstance, sendWorkerEvent } from '@remote-swe-agents-azure/agent-core/lib';
+import { ddb, TableName } from '@remote-swe-agents-azure/agent-core/aws';
 import { TransactWriteCommand } from '@aws-sdk/lib-dynamodb';
 import { z } from 'zod';
-import { MessageItem, modelTypeSchema, SessionItem } from '@remote-swe-agents/agent-core/schema';
+import { MessageItem, modelTypeSchema, SessionItem } from '@remote-swe-agents-azure/agent-core/schema';
 
 // Schema for request validation
 const createSessionSchema = z.object({

@@ -2,7 +2,7 @@
 
 import { z } from 'zod';
 import { authActionClient } from '@/lib/safe-action';
-import { ddb, TableName } from '@remote-swe-agents/agent-core/aws';
+import { ddb, TableName } from '@remote-swe-agents-azure/agent-core/aws';
 import { PutCommand, UpdateCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
 import { revalidatePath } from 'next/cache';
 import { PromptTemplate } from './schemas';
