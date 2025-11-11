@@ -1,0 +1,31 @@
+{
+  "name": "worker",
+  "scripts": {
+    "build": "tsc",
+    "bundle": "esbuild src/*.ts --bundle --outdir=dist --platform=node --charset=utf8",
+    "format": "prettier --write './**/*.ts'",
+    "format:check": "prettier --check './**/*.ts'",
+    "test": "npm run testv -- run --silent",
+    "testv": "vitest --passWithNoTests",
+    "setup:local": "docker compose up -d && npx tsx --env-file=.env.local scripts/setup-dynamodb-local.ts",
+    "start:local": "tsx --env-file=.env.local src/local.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.1",
+    "esbuild": "^0.25.1",
+    "prettier": "^3.5.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "vitest": "^3.1.1"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.7.0",
+    "@remote-swe-agents/agent-core": "file:../agent-core",
+    "express": "^5.1.0",
+    "p-retry": "^6.2.1",
+    "playwright": "^1.55.1",
+    "sharp": "^0.33.5",
+    "ws": "^8.18.0",
+    "zod": "^4.0.0"
+  }
+}
