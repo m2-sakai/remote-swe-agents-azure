@@ -1,32 +1,17 @@
-import { decodeJWT } from 'aws-amplify/auth';
-import { Amplify } from 'aws-amplify';
-import { events } from 'aws-amplify/data';
+/**
+ * Azure Web PubSub を使用したリアルタイムイベント受信
+ *
+ * TODO: Azure Web PubSub または SignalR の実装が必要
+ * 現在は一時的に無効化しています
+ *
+ * 実装方法:
+ * 1. @azure/web-pubsub-client をインストール
+ * 2. WebSocket接続を確立
+ * 3. チャンネルをsubscribe
+ *
+ * 参考: https://learn.microsoft.com/ja-jp/azure/azure-web-pubsub/
+ */
 import { useEffect } from 'react';
-
-Amplify.configure(
-  {
-    API: {
-      Events: {
-        endpoint: `${process.env.NEXT_PUBLIC_EVENT_HTTP_ENDPOINT}/event`,
-        region: process.env.NEXT_PUBLIC_AWS_REGION,
-        defaultAuthMode: 'userPool',
-      },
-    },
-  },
-  {
-    Auth: {
-      tokenProvider: {
-        getTokens: async () => {
-          const res = await fetch('/api/cognito-token');
-          const { accessToken } = await res.json();
-          return {
-            accessToken: decodeJWT(accessToken),
-          };
-        },
-      },
-    },
-  }
-);
 
 type UseEventBusProps = {
   channelName: string;
@@ -35,25 +20,28 @@ type UseEventBusProps = {
 
 export const useEventBus = ({ channelName, onReceived }: UseEventBusProps) => {
   useEffect(() => {
-    const connectAndSubscribe = async () => {
-      const channel = await events.connect(`event-bus/${channelName}`);
-      console.log(`subscribing channel ${channelName}`);
+    console.warn(`useEventBus: Azure Web PubSub is not yet implemented for channel "${channelName}"`);
 
-      channel.subscribe({
-        next: (data) => {
-          onReceived(data.event);
-        },
-        error: (err) => console.error('error', err),
-      });
-      return channel;
-    };
-
-    const pr = connectAndSubscribe();
+    // TODO: Azure Web PubSub の実装
+    // 例:
+    // const webPubSubClient = new WebPubSubClient({
+    //   endpoint: process.env.NEXT_PUBLIC_AZURE_WEB_PUBSUB_ENDPOINT,
+    //   hub: 'event-bus',
+    // });
+    //
+    // await webPubSubClient.start();
+    // webPubSubClient.on('message', (message) => {
+    //   if (message.group === channelName) {
+    //     onReceived(message.data);
+    //   }
+    // });
+    //
+    // return () => {
+    //   webPubSubClient.stop();
+    // };
 
     return () => {
-      pr.then((channel) => {
-        channel.close();
-      });
+      // Cleanup
     };
   }, [channelName, onReceived]);
 };

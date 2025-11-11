@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { getContainer } from './azure/cosmos';
 import { AgentStatus, SessionItem, sessionItemSchema } from '../schema';
-import { bedrockConverse } from './converse';
+import { azureOpenAIConverse } from './converse';
 
 const CONTAINER_NAME = 'sessions';
 
@@ -87,23 +87,21 @@ Use the same language that was used in the conversation.
 Messages: ${message}
     `.trim();
 
-    const { response } = await bedrockConverse(workerId, ['haiku3.5'], {
-      inferenceConfig: {
-        maxTokens: 50,
-        temperature: 0.8,
-      },
+    const { response } = await azureOpenAIConverse(workerId, ['haiku3.5'], {
+      maxTokens: 50,
+      temperature: 0.8,
       messages: [
         {
           role: 'user',
-          content: [{ text: prompt }],
+          content: prompt,
         },
         {
           role: 'assistant',
-          content: [{ text: 'Title:' }],
+          content: 'Title:',
         },
       ],
     });
-    const output = response?.output?.message?.content?.[0].text ?? '';
+    const output = response?.choices?.[0]?.message?.content ?? '';
     let title = output.trim();
     return title;
   } catch (error) {

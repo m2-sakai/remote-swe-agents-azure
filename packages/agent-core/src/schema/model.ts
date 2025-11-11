@@ -23,6 +23,7 @@ export const criRegion = criRegionSchema
 const modelConfigSchema = z.object({
   name: z.string(),
   modelId: z.string(),
+  deploymentName: z.string().optional(), // Azure OpenAI deployment name
   maxOutputTokens: z.number(),
   maxInputTokens: z.number(),
   cacheSupport: z.array(z.enum(['system', 'tool', 'message'])),

@@ -8,6 +8,23 @@ import { sendWebappEvent } from './events';
 import { getWebappSessionUrl } from './webapp-origin';
 import { MessageItem } from '../schema';
 
+// Azure OpenAI / OpenAI SDK types
+type MessageContentPart = {
+  text?: string;
+  image?: {
+    source?: {
+      bytes?: Buffer;
+    };
+  };
+  toolUse?: any;
+  toolResult?: any;
+};
+
+type Message = {
+  role: 'user' | 'assistant' | string;
+  content?: MessageContentPart[];
+};
+
 const CONTAINER_NAME = 'messages';
 
 // Maximum input token count before applying middle-out strategy
@@ -21,13 +38,13 @@ export const saveConversationHistoryAtomic = async (
   thinkingBudget?: number
 ) => {
   const now = Date.now();
-  const PK = `message-${workerId}`;
+  const PK = `message-${workerId}` as const;
   const SK1 = `${String(now).padStart(15, '0')}`;
   const SK2 = `${String(now + 1).padStart(15, '0')}`; // just add 1 to minimize the possibility of SK conflict
 
   const toolUseItem: MessageItem = {
     id: `${PK}#${SK1}`,
-    PK,
+    PK: PK as `message-${string}`,
     SK: SK1,
     content: await preProcessMessageContent(toolUseMessage.content, workerId),
     role: toolUseMessage.role ?? 'unknown',
@@ -38,7 +55,7 @@ export const saveConversationHistoryAtomic = async (
 
   const toolResultItem: MessageItem = {
     id: `${PK}#${SK2}`,
-    PK,
+    PK: PK as `message-${string}`,
     SK: SK2,
     content: await preProcessMessageContent(toolResultMessage.content, workerId),
     role: toolResultMessage.role ?? 'unknown',
@@ -62,12 +79,12 @@ export const saveConversationHistory = async (
   messageType: string,
   thinkingBudget?: number
 ) => {
-  const PK = `message-${workerId}`;
+  const PK = `message-${workerId}` as const;
   const SK = `${String(Date.now()).padStart(15, '0')}`; // make sure it can be sorted in dictionary order
 
   const item = {
     id: `${PK}#${SK}`,
-    PK,
+    PK: PK as `message-${string}`,
     SK,
     content: await preProcessMessageContent(message.content, workerId),
     role: message.role ?? 'unknown',
@@ -312,17 +329,4 @@ export const sendSystemMessage = async (workerId: string, message: string, appen
     role: 'assistant',
     message,
   });
-
-  // For Slack, optionally append webapp URL
-  if (appendWebappUrl) {
-    const sessionUrl = await getWebappSessionUrl(workerId);
-    if (sessionUrl) {
-      const slackMessage = `${message} (<${sessionUrl}|*Web UI*>)`;
-      await sendMessageToSlack(slackMessage);
-    } else {
-      await sendMessageToSlack(message);
-    }
-  } else {
-    await sendMessageToSlack(message);
-  }
 };

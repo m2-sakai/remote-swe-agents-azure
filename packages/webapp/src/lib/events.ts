@@ -1,50 +1,45 @@
-import { SignatureV4 } from '@smithy/signature-v4';
-import { defaultProvider } from '@aws-sdk/credential-provider-node';
-import { HttpRequest } from '@smithy/protocol-http';
-import { Sha256 } from '@aws-crypto/sha256-js';
-
-const httpEndpoint = process.env.EVENT_HTTP_ENDPOINT!;
-const region = process.env.AWS_REGION!;
+/**
+ * Azure Web PubSub を使用したリアルタイムイベント送信
+ *
+ * 環境変数:
+ * - AZURE_WEB_PUBSUB_ENDPOINT: Web PubSub のエンドポイントURL
+ * - AZURE_WEB_PUBSUB_KEY: アクセスキー (または Managed Identity を使用)
+ *
+ * TODO: 本格的な実装が必要な場合は @azure/web-pubsub SDK を使用
+ */
+const webPubSubEndpoint = process.env.AZURE_WEB_PUBSUB_ENDPOINT;
+const webPubSubKey = process.env.AZURE_WEB_PUBSUB_KEY;
 
 export async function sendEvent(channelName: string, payload: unknown) {
-  if (httpEndpoint == null) {
-    console.log(`event api is not configured!`);
+  if (!webPubSubEndpoint) {
+    console.warn('AZURE_WEB_PUBSUB_ENDPOINT is not configured. Event will not be sent.');
     return;
   }
 
-  const endpoint = `${httpEndpoint}/event`;
-  const url = new URL(endpoint);
+  try {
+    // Azure Web PubSub REST API を使用してイベントを送信
+    const hubName = 'event-bus'; // Hub名
+    const endpoint = `${webPubSubEndpoint}/api/hubs/${hubName}/:send`;
 
-  // generate request
-  const requestToBeSigned = new HttpRequest({
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      host: url.host,
-    },
-    hostname: url.host,
-    body: JSON.stringify({
-      channel: `event-bus/${channelName}`,
-      events: [JSON.stringify({ payload })],
-    }),
-    path: url.pathname,
-  });
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(webPubSubKey && { Authorization: `Bearer ${webPubSubKey}` }),
+      },
+      body: JSON.stringify({
+        channel: channelName,
+        data: payload,
+      }),
+    });
 
-  // initialize signer
-  const signer = new SignatureV4({
-    credentials: defaultProvider(),
-    region,
-    service: 'appsync',
-    sha256: Sha256,
-  });
+    if (!response.ok) {
+      console.error(`Failed to send event: ${response.status} ${response.statusText}`);
+      return;
+    }
 
-  // sign request
-  const signed = await signer.sign(requestToBeSigned);
-  const request = new Request(endpoint, signed);
-
-  // publish event via fetch
-  const res = await fetch(request);
-
-  const t = await res.text();
-  console.log(t);
+    console.log(`Event sent to channel: ${channelName}`);
+  } catch (error) {
+    console.error('Failed to send event to Azure Web PubSub:', error);
+  }
 }

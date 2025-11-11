@@ -2,6 +2,10 @@ import { ModelType } from './model';
 
 export type MessageItem = {
   /**
+   * Cosmos DB unique identifier
+   */
+  id: string;
+  /**
    * message-${workerId}`
    */
   PK: `message-${string}`;

@@ -1,13 +1,6 @@
-import { GetParameterCommand, SSMClient } from '@aws-sdk/client-ssm';
-
-if (process.env.APP_ORIGIN_SOURCE_PARAMETER && !process.env.APP_ORIGIN) {
-  const ssm = new SSMClient({ region: process.env.AWS_REGION });
-  try {
-    const res = await ssm.send(new GetParameterCommand({ Name: process.env.APP_ORIGIN_SOURCE_PARAMETER }));
-    process.env.APP_ORIGIN = res.Parameter?.Value;
-  } catch (e) {
-    console.log(e);
-  }
-}
-
-export const AppOrigin = process.env.APP_ORIGIN;
+/**
+ * Application Origin URL
+ * Azure: 環境変数に直接設定するか、Key Vault参照を使用
+ * 例: @Microsoft.KeyVault(SecretUri=https://your-vault.vault.azure.net/secrets/webapp-origin/)
+ */
+export const AppOrigin = process.env.APP_ORIGIN || process.env.WEBAPP_ORIGIN;

@@ -1,6 +1,12 @@
-import { Tool, ToolResultContentBlock } from '@aws-sdk/client-bedrock-runtime';
 import z, { ZodType } from 'zod';
 import { GlobalPreferences } from '../../schema';
+
+// Azure OpenAI compatible types
+export interface ToolResultContent {
+  type: 'text' | 'image';
+  text?: string;
+  image?: string;
+}
 
 export type ToolDefinition<Input> = {
   /**
@@ -10,9 +16,13 @@ export type ToolDefinition<Input> = {
   readonly handler: (
     input: Input,
     context: { workerId: string; toolUseId: string; globalPreferences: GlobalPreferences }
-  ) => Promise<string | ToolResultContentBlock[]>;
+  ) => Promise<string | ToolResultContent[]>;
   readonly schema: ZodType<Input>;
-  readonly toolSpec: () => Promise<NonNullable<Tool['toolSpec']>>;
+  readonly toolSpec: () => Promise<{
+    name: string;
+    description: string;
+    inputSchema: { json: any };
+  }>;
 };
 
 export const zodToJsonSchemaBody = (schema: ZodType) => {

@@ -23,8 +23,6 @@ export const sessionItemSchema = z.object({
   agentStatus: agentStatusSchema,
   initiator: z.string().optional(),
   isHidden: z.boolean().optional(),
-  slackChannelId: z.string().optional(),
-  slackThreadTs: z.string().optional(),
   title: z.string().optional(),
   customAgentId: z.string().optional(),
   runtimeType: runtimeTypeSchema.optional(),

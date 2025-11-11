@@ -65,10 +65,10 @@ export const createCustomAgent = async (
   const id = `${PK}#${SK}`;
 
   const customAgent: CustomAgent = {
+    ...agent,
     id,
     PK,
     SK,
-    ...agent,
     createdAt: now,
     updatedAt: now,
   };

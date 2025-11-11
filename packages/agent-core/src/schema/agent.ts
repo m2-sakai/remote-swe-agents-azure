@@ -8,6 +8,7 @@ export type AgentStatus = z.infer<typeof agentStatusSchema>;
 export type RuntimeType = z.infer<typeof runtimeTypeSchema>;
 
 export const customAgentSchema = z.object({
+  id: z.string(),
   PK: z.literal('custom-agent'),
   SK: z.string(),
   name: z.string(),

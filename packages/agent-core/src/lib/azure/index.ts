@@ -1,6 +1,6 @@
 /**
  * Azure SDK まとめエクスポート
  */
-export * as cosmos from './cosmos';
-export * as blobStorage from './blob-storage';
-export * as keyVault from './keyvault';
+export * from './cosmos';
+export * from './blob-storage';
+export * from './keyvault';

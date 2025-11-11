@@ -3,12 +3,13 @@ import { writeFileSync } from 'fs';
 import { join } from 'path';
 import { executeCommand } from '../command-execution';
 import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib';
-import { PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
-import { ddb, TableName } from '../../lib/aws/ddb';
+import { getContainer } from '../../lib/azure/cosmos';
 import { ciTool } from '../ci';
 import { appendWorkerIdMetadata } from '../../lib/worker-id';
 import { getWebappSessionUrl } from '../../lib/webapp-origin';
 import { GlobalPreferences } from '../../schema';
+
+const CONTAINER_NAME = 'artifacts';
 
 const inputSchema = z.object({
   title: z.string().describe('Title of the pull request'),
@@ -23,6 +24,7 @@ const inputSchema = z.object({
 });
 
 interface PRRecord {
+  id: string;
   PK: string;
   SK: string;
   type: 'pr';
@@ -40,34 +42,37 @@ const execute = async (command: string, cwd: string): Promise<string> => {
 };
 
 const checkExistingPR = async (workerId: string): Promise<PRRecord | null> => {
-  const result = await ddb.send(
-    new QueryCommand({
-      TableName,
-      KeyConditionExpression: 'PK = :pk AND begins_with(SK, :skPrefix)',
-      ExpressionAttributeValues: {
-        ':pk': `artifact-${workerId}`,
-        ':skPrefix': 'pr-',
-      },
-      Limit: 1,
-    })
-  );
+  const container = getContainer(CONTAINER_NAME);
+  const PK = `artifact-${workerId}`;
 
-  return result.Items && result.Items.length > 0 ? (result.Items[0] as PRRecord) : null;
+  const query = `SELECT * FROM c WHERE c.PK = @pk AND STARTSWITH(c.SK, @skPrefix)`;
+  const { resources } = await container.items
+    .query({
+      query,
+      parameters: [
+        { name: '@pk', value: PK },
+        { name: '@skPrefix', value: 'pr-' },
+      ],
+    })
+    .fetchAll();
+
+  return resources && resources.length > 0 ? (resources[0] as PRRecord) : null;
 };
 
 const storePRRecord = async (workerId: string, url: string, branchName: string) => {
-  await ddb.send(
-    new PutCommand({
-      TableName,
-      Item: {
-        PK: `artifact-${workerId}`,
-        SK: `pr-${url}`,
-        type: 'pr',
-        url,
-        branchName,
-      } satisfies PRRecord,
-    })
-  );
+  const container = getContainer(CONTAINER_NAME);
+  const PK = `artifact-${workerId}`;
+  const SK = `pr-${url}`;
+  const id = `${PK}#${SK}`;
+
+  await container.items.create({
+    id,
+    PK,
+    SK,
+    type: 'pr',
+    url,
+    branchName,
+  } satisfies PRRecord);
 };
 
 const addIssueReference = (description: string, issueId: number): string => {

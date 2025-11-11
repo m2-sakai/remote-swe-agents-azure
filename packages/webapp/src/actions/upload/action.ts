@@ -1,14 +1,29 @@
 'use server';
 
 import { authActionClient } from '@/lib/safe-action';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import {
+  BlobServiceClient,
+  StorageSharedKeyCredential,
+  generateBlobSASQueryParameters,
+  BlobSASPermissions,
+} from '@azure/storage-blob';
 import { randomBytes } from 'crypto';
 import { z } from 'zod';
 
-const s3 = new S3Client({});
+const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
+const accountName = process.env.AZURE_STORAGE_ACCOUNT_NAME;
+const accountKey = process.env.AZURE_STORAGE_ACCOUNT_KEY;
+const containerName = process.env.AZURE_STORAGE_CONTAINER_NAME || 'images';
 
-const bucketName = process.env.BUCKET_NAME;
+function getBlobServiceClient() {
+  if (connectionString) {
+    return BlobServiceClient.fromConnectionString(connectionString);
+  } else if (accountName && accountKey) {
+    const sharedKeyCredential = new StorageSharedKeyCredential(accountName, accountKey);
+    return new BlobServiceClient(`https://${accountName}.blob.core.windows.net`, sharedKeyCredential);
+  }
+  throw new Error('Azure Storage configuration is missing');
+}
 
 const getUploadUrlSchema = z.object({
   workerId: z.string().optional(),
@@ -17,9 +32,7 @@ const getUploadUrlSchema = z.object({
 
 export const getUploadUrl = authActionClient.inputSchema(getUploadUrlSchema).action(async ({ parsedInput }) => {
   const { workerId, contentType } = parsedInput;
-  if (!bucketName) {
-    throw new Error('S3 bucket name is not configured');
-  }
+
   if (!['image/png', 'image/webp', 'image/jpeg'].includes(contentType)) {
     throw new Error('Invalid content type');
   }
@@ -30,13 +43,23 @@ export const getUploadUrl = authActionClient.inputSchema(getUploadUrlSchema).act
   // If workerId is provided, use it in the path, otherwise use webapp_init prefix
   const key = workerId ? `${workerId}/${randomId}.${extension}` : `webapp_init/${randomId}.${extension}`;
 
-  const command = new PutObjectCommand({
-    Bucket: bucketName,
-    Key: key,
-    ContentType: contentType,
-  });
+  const blobServiceClient = getBlobServiceClient();
+  const containerClient = blobServiceClient.getContainerClient(containerName);
+  const blobClient = containerClient.getBlobClient(key);
 
-  const signedUrl = await getSignedUrl(s3, command, { expiresIn: 60 });
+  // Generate SAS token for write access
+  const sasToken = generateBlobSASQueryParameters(
+    {
+      containerName,
+      blobName: key,
+      permissions: BlobSASPermissions.parse('w'), // Write only
+      startsOn: new Date(),
+      expiresOn: new Date(new Date().valueOf() + 60 * 1000), // 60 seconds
+    },
+    new StorageSharedKeyCredential(accountName!, accountKey!)
+  ).toString();
+
+  const signedUrl = `${blobClient.url}?${sasToken}`;
 
   return {
     url: signedUrl,
