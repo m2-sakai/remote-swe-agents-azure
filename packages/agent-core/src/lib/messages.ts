@@ -124,15 +124,7 @@ export const getConversationHistory = async (workerId: string) => {
 
   const { resources: items } = await container.items.query(querySpec).fetchAll();
 
-  return { items: items as MessageItem[], slackUserId: searchForLastSlackUserId(items as MessageItem[]) };
-};
-
-const searchForLastSlackUserId = (items: MessageItem[]) => {
-  for (let i = items.length - 1; i >= 0; i--) {
-    if (items[i].slackUserId) {
-      return items[i].slackUserId;
-    }
-  }
+  return { items: items as MessageItem[] };
 };
 
 export const middleOutFiltering = async (items: MessageItem[]) => {

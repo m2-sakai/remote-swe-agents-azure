@@ -1,21 +1,11 @@
-import { getSession, setSlackDestination } from '@remote-swe-agents-azure/agent-core/lib';
+import { getSession } from '@remote-swe-agents-azure/agent-core/lib';
 
 /**
- * Set required global variables for the session (this is dirty but at least is working...)
+ * Set required global variables for the session
  */
 export const refreshSession = async (workerId: string) => {
   const session = await getSession(workerId);
   if (!session) return;
 
-  if (session.slackChannelId && session.slackThreadTs) {
-    setSlackDestination(session.slackChannelId, session.slackThreadTs);
-  }
-  {
-    // For backward compatibility. Will remove this block half year later.
-    const SlackChannelId = process.env.SLACK_CHANNEL_ID!;
-    const SlackThreadTs = process.env.SLACK_THREAD_TS!;
-    if (SlackChannelId && SlackThreadTs) {
-      setSlackDestination(SlackChannelId, SlackThreadTs);
-    }
-  }
+  // Session loaded successfully
 };

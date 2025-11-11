@@ -20,7 +20,6 @@ export type MessageItem = {
   role: string;
   tokenCount: number;
   messageType: string;
-  slackUserId?: string;
   /**
    * Thinking budget in tokens when ultrathink is enabled
    */

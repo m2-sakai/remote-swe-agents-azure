@@ -66,14 +66,14 @@ const agentLoop = async (workerId: string, cancellationToken: CancellationToken)
   }
 
   // For session title generation
-  const { items: allItems, slackUserId } = await pRetry(
+  const { items: allItems } = await pRetry(
     async (attemptCount) => {
       const res = await getConversationHistory(workerId);
       const lastItem = res.items.at(-1);
       if (lastItem == null || lastItem.messageType === 'userMessage' || attemptCount > 4) {
         return res;
       }
-      throw new Error('Last message is from assistant. Possibly DynamoDB replication delay.');
+      throw new Error('Last message is from assistant. Possibly Cosmos DB replication delay.');
     },
     { retries: 5, minTimeout: 100, maxTimeout: 1000 }
   );
@@ -401,12 +401,11 @@ const agentLoop = async (workerId: string, cancellationToken: CancellationToken)
       );
       appendedItems.push(...savedItems);
     } else {
-      const mention = slackUserId ? `<@${slackUserId}> ` : '';
       const finalMessage = res.output?.message;
       if (finalMessage?.content == null || finalMessage.content?.length == 0) {
         // It seems this happens sometimes. We can just ignore this message.
         console.log('final message is empty. ignoring...');
-        await sendSystemMessage(workerId, mention, true);
+        await sendSystemMessage(workerId, '', true);
         break;
       }
 
@@ -416,8 +415,7 @@ const agentLoop = async (workerId: string, cancellationToken: CancellationToken)
       const responseText = finalMessage.content?.at(-1)?.text ?? finalMessage.content?.at(0)?.text ?? '';
       // remove <thinking> </thinking> part with multiline support
       const responseTextWithoutThinking = responseText.replace(/<thinking>[\s\S]*?<\/thinking>/g, '');
-      // Pass true to appendWebappUrl parameter to add the webapp URL to the Slack message at the end of agent loop
-      await sendSystemMessage(workerId, `${mention}${responseTextWithoutThinking}`, true);
+      await sendSystemMessage(workerId, responseTextWithoutThinking, true);
       conversation += `Assistant: ${responseTextWithoutThinking}\n`;
       break;
     }
