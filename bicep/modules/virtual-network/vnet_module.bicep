@@ -10,18 +10,8 @@ param tag object = {}
 @minLength(2)
 @maxLength(64)
 param virtualNetworkName string
-
 @description('CIDR 表記でこの仮想ネットワーク用に予約されているアドレスブロックの一覧')
-param virtualNetworkAddressPrefixes string[]
-
-@description('暗号化の有効化の有無')
-param encryptionEnabled bool = false
-
-@description('暗号化をサポートしていない VM が許可されているか')
-param encryptionEnforcement string = 'AllowUnencrypted'
-
-@description('DDoS 保護の有効化の有無')
-param enableDdosProtection bool = false
+param addressPrefixes string[]
 
 resource virtualNetwork 'Microsoft.Network/virtualNetworks@2024-10-01' = {
   name: virtualNetworkName
@@ -29,15 +19,15 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2024-10-01' = {
   tags: tag
   properties: {
     addressSpace: {
-      addressPrefixes: virtualNetworkAddressPrefixes
+      addressPrefixes: addressPrefixes
     }
     encryption: {
-      enabled: encryptionEnabled
-      enforcement: encryptionEnforcement
+      enabled: false
+      enforcement: 'AllowUnencrypted'
     }
     subnets: []
     virtualNetworkPeerings: []
-    enableDdosProtection: enableDdosProtection
+    enableDdosProtection: false
   }
 }
 

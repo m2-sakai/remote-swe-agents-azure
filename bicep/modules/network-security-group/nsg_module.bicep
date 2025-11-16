@@ -11,12 +11,15 @@ param tag object = {}
 @maxLength(80)
 param networkSecurityGroupName string
 
+@description('適用するセキュリティルールの配列')
+param securityRules array
+
 resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2024-10-01' = {
   name: networkSecurityGroupName
   location: location
   tags: tag
   properties: {
-    securityRules: []
+    securityRules: securityRules
   }
 }
 

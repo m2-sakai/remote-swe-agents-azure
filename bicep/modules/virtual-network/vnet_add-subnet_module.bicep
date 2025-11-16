@@ -19,36 +19,17 @@ param serviceEndpoints array = []
 @description('デリゲートするリソースの配列')
 param delegations array = []
 
-@description('プライベートエンドポイントのネットワークポリシー適用の有効化の有無')
-param privateEndpointNetworkPolicies string = 'Enabled'
-
-@description('プライベートリンクサービスのネットワークポリシー適用の有効化の有無')
-param privateLinkServiceNetworkPolicies string = 'Enabled'
-
-// 既存リソースから情報を取得する場合、nullや空文字にできないため文字列で'null'とする
 @description('サブネットに適用するネットワークセキュリティグループのリソース名')
 @minLength(1)
 @maxLength(80)
 param networkSecurityGroupName string = 'null'
 
-// 既存リソースから情報を取得する場合、nullや空文字にできないため文字列で'null'とする
-@description('サブネットに適用するルートテーブルのリソース名')
-@minLength(1)
-@maxLength(80)
-param routeTableName string = 'null'
-
 resource existingVirtualNetwork 'Microsoft.Network/virtualNetworks@2024-10-01' existing = {
   name: virtualNetworkName
 }
 
-var hasNetworkSecurityGroupName = networkSecurityGroupName != 'null'
-resource existingNetworkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2024-10-01' existing = if (hasNetworkSecurityGroupName) {
+resource existingNetworkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2024-10-01' existing = {
   name: networkSecurityGroupName
-}
-
-var hasrouteTableName = routeTableName != 'null'
-resource existingRouteTable 'Microsoft.Network/routeTables@2024-10-01' existing = if (hasrouteTableName) {
-  name: routeTableName
 }
 
 resource subnet 'Microsoft.Network/virtualNetworks/subnets@2024-10-01' = {
@@ -56,16 +37,14 @@ resource subnet 'Microsoft.Network/virtualNetworks/subnets@2024-10-01' = {
   parent: existingVirtualNetwork
   properties: {
     addressPrefix: addressPrefix
-    networkSecurityGroup: hasNetworkSecurityGroupName ? {
+    networkSecurityGroup: {
       id: existingNetworkSecurityGroup.id
-    } : null
-    routeTable: hasrouteTableName ? {
-      id: existingRouteTable.id
-    }: null
+    }
+    routeTable: null
     serviceEndpoints: serviceEndpoints
     delegations: delegations
-    privateEndpointNetworkPolicies: privateEndpointNetworkPolicies
-    privateLinkServiceNetworkPolicies: privateLinkServiceNetworkPolicies
+    privateEndpointNetworkPolicies: 'Enabled'
+    privateLinkServiceNetworkPolicies: 'Enabled'
   }
 }
 

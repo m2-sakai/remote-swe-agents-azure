@@ -1,25 +1,32 @@
 using '../templates/main.bicep'
 
-// パラメータ：共通
+// 共通
 @description('タグ')
 param tag = {
   owner: 'm2-sakai'
   project: 'remote-swe-agents-azure'
 }
 
-// パラメータ：マネージドID
+// マネージドID
 param userAssignedIdentityName = 'm2-sakai-je-ID-01'
 
-// パラメータ：Log Analytics
+// Log Analytics / Application Insights
 param logAnalyticsWorkspaceName = 'm2-sakai-je-LOGANA-01'
-
-// パラメータ：Application Insights
 param applicationInsightsName = 'm2-sakai-je-APPINS-01'
 
-// パラメータ：App Service Plan
+// NSG
+param networkSecurityGroups = []
+
+// 仮想ネットワーク / サブネット
+param virtualNetworkName = 'm2-sakai-je-VNET-01'
+param addressPrefixes = ['172.16.0.0/16']
+param subnets = []
+
+// プライベートDNSゾーン
+param privateDnsZones = []
+
+// App Service Plan / App Service
 param appServicePlanName = 'm2-sakai-je-ASP-01'
 param appServicePlanSkuName = 'P0V3'
-
-// パラメータ：App Service
 param appServiceName = 'm2-sakai-je-APP-01'
 param runtimeStack = 'NODE|22-lts'
