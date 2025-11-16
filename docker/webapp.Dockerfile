@@ -1,4 +1,4 @@
-FROM node:22-alpine AS builder
+FROM node:22 AS builder
 WORKDIR /build
 COPY package*.json ./
 COPY packages/agent-core/package*.json ./packages/agent-core/
