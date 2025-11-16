@@ -2,7 +2,10 @@ using '../templates/main.bicep'
 
 // パラメータ：共通
 @description('タグ')
-param tag = {}
+param tag = {
+  owner: 'm2-sakai'
+  project: 'remote-swe-agents-azure'
+}
 
 // パラメータ：マネージドID
 param userAssignedIdentityName = 'm2-sakai-je-ID-01'
