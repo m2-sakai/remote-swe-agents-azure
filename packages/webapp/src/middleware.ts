@@ -10,21 +10,27 @@ import type { NextRequest } from 'next/server';
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next();
 
+  // 開発環境: 認証をスキップ
+  if (process.env.SKIP_AUTH === 'true') {
+    console.log('[DEV MODE] Authentication skipped');
+    return response;
+  }
+
   try {
     // セッションCookieをチェック
     const sessionCookie = request.cookies.get('session');
-    
+
     if (!sessionCookie?.value) {
       return NextResponse.redirect(new URL('/sign-in', request.url));
     }
 
     // セッション情報をパース
     const session = JSON.parse(sessionCookie.value);
-    
+
     // アクセストークンとアカウント情報が存在するか確認
-    const authenticated = 
-      session?.accessToken && 
-      session?.account && 
+    const authenticated =
+      session?.accessToken &&
+      session?.account &&
       session?.expiresOn &&
       // トークンの有効期限をチェック（5分のバッファ）
       session.expiresOn > Math.floor(Date.now() / 1000) + 300;

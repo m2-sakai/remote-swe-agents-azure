@@ -12,8 +12,22 @@ export class UserNotCreatedError {
  * Get current authenticated session
  */
 export async function getSession() {
+  // 開発環境: 認証をスキップしてダミーセッションを返す
+  if (process.env.SKIP_AUTH === 'true') {
+    const devUserId = process.env.DEV_USER_ID || 'dev-user-001';
+    const devUserEmail = process.env.DEV_USER_EMAIL || 'dev@example.com';
+
+    console.log('[DEV MODE] Using dummy session:', { userId: devUserId, email: devUserEmail });
+
+    return {
+      userId: devUserId,
+      email: devUserEmail,
+      accessToken: 'dev-access-token',
+    };
+  }
+
   const session = await getMsalSession();
-  
+
   if (!session || !session.account) {
     throw new Error('session not found');
   }
