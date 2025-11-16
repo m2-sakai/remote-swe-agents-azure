@@ -5,12 +5,13 @@ import { CancellationToken } from './common/cancellation-token';
 import { sendSystemMessage, updateInstanceStatus, workerEventSchema } from '@remote-swe-agents-azure/agent-core/lib';
 import { updateAgentStatusWithEvent } from './common/status';
 import { refreshSession } from './common/refresh-session';
+import { WebPubSubClient } from '@azure/web-pubsub-client';
+import { WebPubSubServiceClient } from '@azure/web-pubsub';
 
-// Azure Event Hubs または Service Bus を使用する場合の準備
-// TODO: AWS Amplify Events を Azure Event Hubs/Service Bus に置き換える
 Object.assign(global, { WebSocket: require('ws') });
 
-const eventHttpEndpoint = process.env.EVENT_HTTP_ENDPOINT;
+const webPubSubConnectionString = process.env.WEB_PUBSUB_CONNECTION_STRING;
+const webPubSubHub = process.env.WEB_PUBSUB_HUB || 'worker-events';
 
 class ConverseSessionTracker {
   private sessions: { isFinished: boolean; cancellationToken: CancellationToken }[] = [];
@@ -88,34 +89,78 @@ export const main = async (workerId: string) => {
   isStarted[workerId] = true;
   const tracker = new ConverseSessionTracker(workerId);
 
-  // TODO: Azure Service Bus または Event Hubs を使用したイベント購読
-  // 現在は簡易的なポーリング方式で実装
-  let pollingInterval: NodeJS.Timeout | null = null;
+  // Azure Web PubSub を使用したリアルタイムイベント購読
+  let webPubSubClient: WebPubSubClient | null = null;
 
-  const startEventPolling = () => {
-    // 5秒ごとにセッションの状態をチェック
-    pollingInterval = setInterval(async () => {
-      try {
-        // セッションの状態をチェック（必要に応じて実装）
-        // 現時点では、エージェントはwebappからのメッセージを受信するまで待機
-      } catch (error) {
-        console.error('Error polling events:', error);
-      }
-    }, 5000);
-  };
+  if (webPubSubConnectionString) {
+    try {
+      // Web PubSubサービスクライアントを使用してクライアントアクセスURLを生成
+      const serviceClient = new WebPubSubServiceClient(webPubSubConnectionString, webPubSubHub);
+      const clientAccessUrl = await serviceClient.getClientAccessToken({
+        userId: workerId,
+        roles: [`webpubsub.joinLeaveGroup.worker-${workerId}`, 'webpubsub.sendToGroup'],
+      });
 
-  const stopEventPolling = () => {
-    if (pollingInterval) {
-      clearInterval(pollingInterval);
-      pollingInterval = null;
+      // Web PubSubクライアントを初期化
+      webPubSubClient = new WebPubSubClient(clientAccessUrl.url);
+
+      // ブロードキャストメッセージを受信
+      webPubSubClient.on('server-message', (e: any) => {
+        console.log('Received broadcast message:', e.message);
+      });
+
+      // グループメッセージを受信（特定のworker向け）
+      webPubSubClient.on('group-message', (e: any) => {
+        console.log('Received group message:', e.message);
+        try {
+          const { data: event, error, success } = workerEventSchema.safeParse(e.message.data);
+          if (!success || error) {
+            console.log(`Invalid worker event schema. Ignoring... ${JSON.stringify(e.message)}`);
+            console.log(error);
+            return;
+          }
+
+          const type = event.type;
+          if (type === 'onMessageReceived') {
+            tracker.cancelCurrentSessions();
+            tracker.startOnMessageReceived();
+          } else if (type === 'forceStop') {
+            tracker.cancelCurrentSessions(async () => {
+              await updateAgentStatusWithEvent(workerId, 'pending');
+              await sendSystemMessage(workerId, 'Agent work was stopped.');
+            });
+          } else if (type === 'sessionUpdated') {
+            refreshSession(workerId).catch((err) => console.error('Error refreshing session:', err));
+          }
+        } catch (error) {
+          console.error('Error processing group message:', error);
+        }
+      });
+
+      // 接続
+      await webPubSubClient.start();
+      console.log(`Connected to Web PubSub hub: ${webPubSubHub} as user: ${workerId}`);
+
+      // workerIdグループに参加（worker固有のメッセージを受信するため）
+      await webPubSubClient.joinGroup(`worker-${workerId}`);
+      console.log(`Joined group: worker-${workerId}`);
+
+      // プロセス終了時に接続を閉じる
+      const cleanup = async () => {
+        if (webPubSubClient) {
+          await webPubSubClient.stop();
+          console.log('Web PubSub connection closed');
+        }
+      };
+      process.on('SIGINT', cleanup);
+      process.on('SIGTERM', cleanup);
+    } catch (error) {
+      console.error('Failed to initialize Web PubSub client:', error);
+      console.log('Continuing without real-time event support');
     }
-  };
-
-  startEventPolling();
-
-  // プロセス終了時にポーリングを停止
-  process.on('SIGINT', stopEventPolling);
-  process.on('SIGTERM', stopEventPolling);
+  } else {
+    console.warn('WEB_PUBSUB_CONNECTION_STRING not set. Real-time events disabled.');
+  }
 
   setKillTimer(workerId);
 

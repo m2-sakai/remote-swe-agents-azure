@@ -5,54 +5,22 @@
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="lIgjIaN_FAZEFsx70GAv-1" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=none;" parent="1" vertex="1">
-          <mxGeometry x="40" y="40" width="1250" height="750" as="geometry" />
+          <mxGeometry x="260" y="40" width="1030" height="750" as="geometry" />
         </mxCell>
         <mxCell id="lIgjIaN_FAZEFsx70GAv-2" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;" parent="1" vertex="1">
-          <mxGeometry x="160" y="60" width="1090" height="720" as="geometry" />
+          <mxGeometry x="370" y="60" width="880" height="720" as="geometry" />
         </mxCell>
         <mxCell id="lIgjIaN_FAZEFsx70GAv-3" value="" style="image;aspect=fixed;html=1;points=[];align=center;fontSize=12;image=img/lib/azure2/other/Azure_A.svg;" parent="1" vertex="1">
-          <mxGeometry x="170" y="70" width="42.43" height="40" as="geometry" />
-        </mxCell>
-        <mxCell id="lIgjIaN_FAZEFsx70GAv-21" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="lIgjIaN_FAZEFsx70GAv-12" target="lIgjIaN_FAZEFsx70GAv-17" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="lIgjIaN_FAZEFsx70GAv-12" value="" style="image;aspect=fixed;html=1;points=[];align=center;fontSize=12;image=img/lib/azure2/networking/Front_Doors.svg;" parent="1" vertex="1">
-          <mxGeometry x="211.7" y="308" width="45.33" height="40" as="geometry" />
-        </mxCell>
-        <mxCell id="lIgjIaN_FAZEFsx70GAv-13" value="Front Door" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" parent="1" vertex="1">
-          <mxGeometry x="197.81" y="353" width="70" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="lIgjIaN_FAZEFsx70GAv-14" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;" parent="1" vertex="1">
-          <mxGeometry x="310" y="260" width="100" height="130" as="geometry" />
-        </mxCell>
-        <mxCell id="lIgjIaN_FAZEFsx70GAv-15" value="" style="image;aspect=fixed;html=1;points=[];align=center;fontSize=12;image=img/lib/azure2/networking/Subnet.svg;" parent="1" vertex="1">
-          <mxGeometry x="320" y="270" width="34.6" height="20.72" as="geometry" />
-        </mxCell>
-        <mxCell id="lIgjIaN_FAZEFsx70GAv-16" value="Subnet" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" parent="1" vertex="1">
-          <mxGeometry x="354.6" y="265.36" width="41.82" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="lIgjIaN_FAZEFsx70GAv-17" value="" style="image;aspect=fixed;html=1;points=[];align=center;fontSize=12;image=img/lib/azure2/networking/Private_Endpoint.svg;" parent="1" vertex="1">
-          <mxGeometry x="340.36" y="310" width="39.27" height="36" as="geometry" />
-        </mxCell>
-        <mxCell id="lIgjIaN_FAZEFsx70GAv-18" value="Private&amp;nbsp; Endpoint" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" parent="1" vertex="1">
-          <mxGeometry x="330.18" y="346" width="59.64" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="lIgjIaN_FAZEFsx70GAv-22" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="lIgjIaN_FAZEFsx70GAv-17" target="lIgjIaN_FAZEFsx70GAv-19" edge="1">
-          <mxGeometry relative="1" as="geometry">
-            <mxPoint x="238" y="350" as="sourcePoint" />
-            <mxPoint x="350" y="338" as="targetPoint" />
-          </mxGeometry>
+          <mxGeometry x="380" y="67.96" width="42.43" height="40" as="geometry" />
         </mxCell>
         <mxCell id="lIgjIaN_FAZEFsx70GAv-28" value="" style="shape=actor;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="50" y="303" width="40" height="55" as="geometry" />
+          <mxGeometry x="290" y="300.5" width="40" height="55" as="geometry" />
         </mxCell>
-        <mxCell id="lIgjIaN_FAZEFsx70GAv-32" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.9;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="lIgjIaN_FAZEFsx70GAv-28" target="lIgjIaN_FAZEFsx70GAv-12" edge="1">
+        <mxCell id="lIgjIaN_FAZEFsx70GAv-32" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.9;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="lIgjIaN_FAZEFsx70GAv-28" target="lIgjIaN_FAZEFsx70GAv-19" edge="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="96" y="423" as="sourcePoint" />
-            <mxPoint x="230" y="820" as="targetPoint" />
-            <Array as="points">
-              <mxPoint x="86" y="330" />
-            </Array>
+            <mxPoint x="211.69999999999982" y="330.5" as="targetPoint" />
+            <Array as="points" />
           </mxGeometry>
         </mxCell>
         <mxCell id="lIgjIaN_FAZEFsx70GAv-51" value="" style="image;aspect=fixed;html=1;points=[];align=center;fontSize=12;image=img/lib/azure2/databases/Azure_Cosmos_DB.svg;" parent="1" vertex="1">
@@ -278,7 +246,7 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="lIgjIaN_FAZEFsx70GAv-159" value="Azure" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" parent="1" vertex="1">
-          <mxGeometry x="215.63" y="72.47999999999999" width="34.37" height="35.48" as="geometry" />
+          <mxGeometry x="425.63" y="70.43999999999998" width="34.37" height="35.48" as="geometry" />
         </mxCell>
         <mxCell id="lIgjIaN_FAZEFsx70GAv-272" value="" style="image;aspect=fixed;html=1;points=[];align=center;fontSize=12;image=img/lib/azure2/networking/Subnet.svg;" parent="1" vertex="1">
           <mxGeometry x="593.04" y="267.53999999999996" width="34.6" height="20.72" as="geometry" />
