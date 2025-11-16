@@ -1,10 +1,10 @@
 export * from './prompt';
 export * from './messages';
 export * from './metadata';
-// export * from './converse';  // TODO: Bedrock → Azure OpenAI 移行が必要
+export * from './converse';
 export * from './sessions';
 export * from './worker-id';
-// export * from './worker-manager';  // TODO: EC2 → Azure VM 移行が必要
+export * from './worker-manager';
 export * from './events';
 export * from './cost';
 export * from './todo';

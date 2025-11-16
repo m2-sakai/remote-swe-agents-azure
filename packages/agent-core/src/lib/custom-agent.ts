@@ -52,7 +52,7 @@ export const getCustomAgents = async (limit: number = 50): Promise<CustomAgent[]
 };
 
 export const createCustomAgent = async (
-  agent: Omit<CustomAgent, 'PK' | 'SK' | 'createdAt' | 'updatedAt'>
+  agent: Omit<CustomAgent, 'id' | 'PK' | 'SK' | 'createdAt' | 'updatedAt'>
 ): Promise<CustomAgent> => {
   if (!agent.mcpConfig) {
     agent.mcpConfig = JSON.stringify(EmptyMcpConfig);
@@ -81,7 +81,7 @@ export const createCustomAgent = async (
 
 export const updateCustomAgent = async (
   sk: string,
-  updates: Omit<CustomAgent, 'PK' | 'SK' | 'createdAt' | 'updatedAt'>
+  updates: Omit<CustomAgent, 'id' | 'PK' | 'SK' | 'createdAt' | 'updatedAt'>
 ): Promise<CustomAgent> => {
   if (!updates.mcpConfig) {
     updates.mcpConfig = JSON.stringify({ mcpServers: {} } satisfies z.infer<typeof mcpConfigSchema>);

@@ -28,6 +28,8 @@
     "format:check": "prettier --check \"src/**/*.ts\""
   },
   "dependencies": {
+    "@azure/arm-compute": "^23.1.0",
+    "@azure/arm-network": "^34.1.0",
     "@azure/cosmos": "^4.2.0",
     "@azure/identity": "^4.5.0",
     "@azure/keyvault-secrets": "^4.9.0",

@@ -150,6 +150,7 @@ export async function transactWrite(
     item?: any;
     id?: string;
     partitionKey?: string;
+    updates?: any;
   }>
 ): Promise<void> {
   const container = getContainer(containerName);
@@ -159,10 +160,26 @@ export async function transactWrite(
   for (const op of operations) {
     if (op.type === 'Put' && op.item) {
       await container.items.upsert(op.item);
+    } else if (op.type === 'Update' && op.id && op.partitionKey && op.updates) {
+      const { resource: existing } = await container.item(op.id, op.partitionKey).read();
+      if (existing) {
+        const updated = { ...existing, ...op.updates };
+        await container.item(op.id, op.partitionKey).replace(updated);
+      }
     } else if (op.type === 'Delete' && op.id && op.partitionKey) {
       await container.item(op.id, op.partitionKey).delete();
     }
   }
+}
+
+/**
+ * バッチ書き込み（複数アイテムを一度に書き込み）
+ */
+export async function batchWrite(containerName: string, items: Array<any>): Promise<void> {
+  const container = getContainer(containerName);
+
+  // 並列実行で高速化
+  await Promise.all(items.map((item) => container.items.upsert(item)));
 }
 
 export default {
@@ -174,5 +191,6 @@ export default {
   queryItems,
   queryByPartitionKey,
   transactWrite,
+  batchWrite,
   TableName,
 };

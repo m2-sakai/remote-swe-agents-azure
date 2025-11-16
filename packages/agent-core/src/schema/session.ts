@@ -11,6 +11,7 @@ export const instanceStatusSchema = z.union([
 export type InstanceStatus = z.infer<typeof instanceStatusSchema>;
 
 export const sessionItemSchema = z.object({
+  id: z.string(),
   PK: z.literal('sessions'),
   SK: z.string(),
   workerId: z.string(),
