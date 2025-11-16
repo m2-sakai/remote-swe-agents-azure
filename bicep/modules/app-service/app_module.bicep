@@ -184,7 +184,7 @@ resource appService 'Microsoft.Web/sites@2024-11-01' = {
       applicationTraffic: true
       backupRestoreTraffic: true
       contentShareTraffic: true
-      imagePullTraffic: true
+      imagePullTraffic: false
     }
     containerSize: 0
     dailyMemoryTimeQuota: 0

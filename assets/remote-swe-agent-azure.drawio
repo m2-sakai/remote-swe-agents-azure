@@ -92,10 +92,10 @@
           <mxGeometry x="1058.5100000000002" y="150" width="114.04" height="30" as="geometry" />
         </mxCell>
         <mxCell id="lIgjIaN_FAZEFsx70GAv-82" value="" style="image;aspect=fixed;html=1;points=[];align=center;fontSize=12;image=img/lib/azure2/identity/Managed_Identities.svg;" parent="1" vertex="1">
-          <mxGeometry x="762.03" y="100.42000000000002" width="55.31" height="53.68" as="geometry" />
+          <mxGeometry x="802.78" y="99.32000000000002" width="55.31" height="53.68" as="geometry" />
         </mxCell>
         <mxCell id="lIgjIaN_FAZEFsx70GAv-83" value="Managed Identity" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" parent="1" vertex="1">
-          <mxGeometry x="759.2499999999998" y="154.1" width="59.64" height="30" as="geometry" />
+          <mxGeometry x="799.9999999999998" y="153" width="59.64" height="30" as="geometry" />
         </mxCell>
         <mxCell id="lIgjIaN_FAZEFsx70GAv-84" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;" parent="1" vertex="1">
           <mxGeometry x="700.04" y="438.92" width="211.8" height="130" as="geometry" />
@@ -355,6 +355,22 @@
             <Array as="points">
               <mxPoint x="751" y="600" />
               <mxPoint x="519" y="600" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="-bxhX-qnA8wRHxP74P2h-2" value="" style="image;aspect=fixed;html=1;points=[];align=center;fontSize=12;image=img/lib/azure2/containers/Container_Registries.svg;" vertex="1" parent="1">
+          <mxGeometry x="684.45" y="107.96000000000004" width="49.36" height="44.28" as="geometry" />
+        </mxCell>
+        <mxCell id="-bxhX-qnA8wRHxP74P2h-3" value="Container Registry" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="717.6500000000001" y="152.99999999999994" width="59.64" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="-bxhX-qnA8wRHxP74P2h-10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="lIgjIaN_FAZEFsx70GAv-275" target="-bxhX-qnA8wRHxP74P2h-2">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="658" y="338" as="sourcePoint" />
+            <mxPoint x="709" y="221.84000000000015" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="634" y="300" />
+              <mxPoint x="709" y="300" />
             </Array>
           </mxGeometry>
         </mxCell>

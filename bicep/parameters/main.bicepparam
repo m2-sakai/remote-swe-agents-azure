@@ -17,7 +17,7 @@ param applicationInsightsName = 'm2-sakai-je-APPINS-01'
 // NSG
 param networkSecurityGroups = [
   {
-    networkSecurityGroupName: 'm2-sakai-je-NSG-outbound-sub-0_0'
+    networkSecurityGroupName: 'm2-sakai-je-NSG-Outbound-sub-0_0'
     securityRules: []
   }
   {
@@ -44,6 +44,10 @@ param networkSecurityGroups = [
     networkSecurityGroupName: 'm2-sakai-je-NSG-Vm-sub-6_0'
     securityRules: []
   }
+  {
+    networkSecurityGroupName: 'm2-sakai-je-NSG-Acr-sub-7_0'
+    securityRules: []
+  }
 ]
 
 // 仮想ネットワーク / サブネット
@@ -51,9 +55,9 @@ param virtualNetworkName = 'm2-sakai-je-VNET-01'
 param addressPrefixes = ['172.16.0.0/16']
 param subnets = [
   {
-    subnetName: 'outbound-sub-0_0'
+    subnetName: 'Outbound-sub-0_0'
     addressPrefix: '172.16.0.0/24'
-    networkSecurityGroupName: 'm2-sakai-je-NSG-outbound-sub-0_0'
+    networkSecurityGroupName: 'm2-sakai-je-NSG-Outbound-sub-0_0'
     serviceEndpoints: []
     delegations: [
       {
@@ -107,6 +111,13 @@ param subnets = [
     serviceEndpoints: []
     delegations: []
   }
+  {
+    subnetName: 'Acr-sub-7_0'
+    addressPrefix: '172.16.7.0/24'
+    networkSecurityGroupName: 'm2-sakai-je-NSG-Acr-sub-7_0'
+    serviceEndpoints: []
+    delegations: []
+  }
 ]
 
 // プライベートDNSゾーン
@@ -131,17 +142,47 @@ param privateDnsZones = [
     privateDnsZoneName: 'privatelink.vaultcore.azure.net'
     privateDnsZoneVnetLinkName: 'lint-VNET-01'
   }
+  {
+    privateDnsZoneName: 'privatelink.azurecr.io'
+    privateDnsZoneVnetLinkName: 'lint-VNET-01'
+  }
 ]
+
+// コンテナーレジストリ
+param containerRegistryName = 'm2sakaijeacr01'
+param skuName = 'Basic'
 
 // App Service Plan / App Service
 param appServicePlanName = 'm2-sakai-je-ASP-01'
 param appServicePlanSkuName = 'P0V3'
 param appServiceName = 'm2-sakai-je-APP-01'
 param runtimeStack = 'NODE|22-lts'
-param vnetIntegrationSubnetName = 'outbound-sub-0_0'
+param vnetIntegrationSubnetName = 'Outbound-sub-0_0'
+param aplAppSettings = [
+  {
+    name: 'SKIP_AUTH'
+    value: 'true'
+  }
+  {
+    name: 'DEV_USER_ID'
+    value: 'dev-user-001'
+  }
+  {
+    name: 'DEV_USER_EMAIL'
+    value: 'dev@example.com'
+  }
+  {
+    name: 'APP_ORIGIN'
+    value: 'https://${appServiceName}.azurewebsites.net'
+  }
+  {
+    name: 'PORT'
+    value: '3000'
+  }
+]
 
 // Cosmos DB
-param cosmosDbName = 'm2-sakai-je-COSMOS-01'
+param cosmosDbName = 'm2-sakai-je-cosmos-01'
 param cosmosPrivateEndpointName = 'm2-sakai-je-PEP-COSMOS-01'
 param cosmosPrivateLinkServiceGroupIds = [
   'Sql'

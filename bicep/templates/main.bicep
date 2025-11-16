@@ -116,6 +116,25 @@ module pdzModule '../modules/private-dns-zone/pdz_module.bicep' = [
   }
 ]
 
+// Container Registry
+@description('コンテナーレジストリのリソース名')
+@minLength(5)
+@maxLength(50)
+param containerRegistryName string
+@description('コンテナーレジストリのSKU名')
+param skuName string
+module containerRegistryModule '../modules/container-registy/cr_module.bicep' = {
+  name: take(containerRegistryName, 64)
+  params: {
+    tag: tag
+    containerRegistryName: containerRegistryName
+    skuName: skuName
+  }
+  dependsOn: [
+    pdzModule
+  ]
+}
+
 // App Service Plan / App Service
 @description('App Service Plan の名前')
 @minLength(1)
@@ -131,6 +150,8 @@ param appKind string = 'app,linux'
 param runtimeStack string
 @description('Vnet統合のサブネットの名前')
 param vnetIntegrationSubnetName string
+@description('アプリ観点のアプリケーション設定')
+param aplAppSettings array
 module appServicePlanModule '../modules/app-service-plan/asp_module.bicep' = {
   name: take(appServicePlanName, 64)
   params: {
@@ -149,6 +170,7 @@ module appServiceModule '../modules/app-service/app_module.bicep' = {
     userAssignedIdentityName: userAssignedIdentityName
     applicationInsightsName: applicationInsightsName
     runtimeStack: runtimeStack
+    aplAppSettings: aplAppSettings
   }
   dependsOn: [
     managedIdentityModule
