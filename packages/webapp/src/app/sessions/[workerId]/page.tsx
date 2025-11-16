@@ -42,19 +42,11 @@ export default async function SessionPage({ params }: PageProps<'/sessions/[work
           for (const block of msgBlocks) {
             const toolName = block.toolUse!.name;
             const toolUseId = block.toolUse!.toolUseId!;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const input = block.toolUse?.input as any;
 
             if (toolName === 'sendImageToUser') {
               const messageText = formatMessage(input?.message ?? '');
               const key = getAttachedImageKey(workerId, toolUseId, input.imagePath);
-
-              // Extract reasoning content if available
-              let reasoningText: string | undefined;
-              const reasoningBlocks = message.content?.filter((block) => block.reasoningContent) ?? [];
-              if (reasoningBlocks.length > 0) {
-                reasoningText = reasoningBlocks[0].reasoningContent?.reasoningText?.text;
-              }
 
               messages.push({
                 id: `${item.SK}-${i}-${toolUseId}`,
@@ -64,18 +56,10 @@ export default async function SessionPage({ params }: PageProps<'/sessions/[work
                 type: 'message',
                 imageKeys: [key],
                 thinkingBudget: item.thinkingBudget,
-                reasoningText,
               });
             } else {
               // Handle sendMessageToUser and sendMessageToUserIfNecessary as before
               const messageText = formatMessage(input?.message ?? '');
-
-              // Extract reasoning content if available
-              let reasoningText: string | undefined;
-              const reasoningBlocks = message.content?.filter((block) => block.reasoningContent) ?? [];
-              if (reasoningBlocks.length > 0) {
-                reasoningText = reasoningBlocks[0].reasoningContent?.reasoningText?.text;
-              }
 
               if (messageText) {
                 messages.push({
@@ -85,7 +69,6 @@ export default async function SessionPage({ params }: PageProps<'/sessions/[work
                   timestamp: new Date(parseInt(item.SK)),
                   type: 'message',
                   thinkingBudget: item.thinkingBudget,
-                  reasoningText,
                 });
               }
             }
@@ -129,8 +112,8 @@ export default async function SessionPage({ params }: PageProps<'/sessions/[work
             .map(
               (block) =>
                 `${block.toolResult.toolUseId}\n${(block.toolResult.content ?? [])
-                  .filter((b) => b.text)
-                  .map((b) => b.text)
+                  .filter((b: any) => b.text)
+                  .map((b: any) => b.text)
                   .join('\n')}`
             )
             .join('\n\n');
@@ -156,13 +139,6 @@ export default async function SessionPage({ params }: PageProps<'/sessions/[work
         const text = (message.content?.map((c) => c.text).filter((c) => c) ?? []).join('\n');
         const formatted = formatMessage(text);
 
-        // Extract reasoning content if available
-        let reasoningText: string | undefined;
-        const reasoningBlocks = message.content?.filter((block) => block.reasoningContent) ?? [];
-        if (reasoningBlocks.length > 0) {
-          reasoningText = reasoningBlocks[0].reasoningContent?.reasoningText?.text;
-        }
-
         if (formatted) {
           messages.push({
             id: `${item.SK}-${i}`,
@@ -171,7 +147,6 @@ export default async function SessionPage({ params }: PageProps<'/sessions/[work
             timestamp: new Date(parseInt(item.SK)),
             type: 'message',
             thinkingBudget: item.thinkingBudget,
-            reasoningText,
           });
         }
         break;

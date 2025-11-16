@@ -6,6 +6,9 @@ import { getTranslations } from 'next-intl/server';
 import ApiKeyClientActions from './components/ApiKeyClientActions';
 import { AppOrigin } from '@/lib/origin';
 
+// 動的レンダリングを強制（ビルド時にデータフェッチしない）
+export const dynamic = 'force-dynamic';
+
 export default async function ApiKeysPage() {
   const apiKeys = await getApiKeys();
   const t = await getTranslations('api_settings');

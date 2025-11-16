@@ -5,16 +5,15 @@
 import { CosmosClient, Container, Database } from '@azure/cosmos';
 import { DefaultAzureCredential } from '@azure/identity';
 
-// 環境変数から設定を取得
-const endpoint = process.env.AZURE_COSMOS_ENDPOINT!;
-const databaseId = process.env.AZURE_COSMOS_DATABASE_ID || 'remote-swe-agents';
-
-// クライアント初期化
-let cosmosClient: CosmosClient;
-let database: Database;
+// クライアント初期化（遅延初期化）
+let cosmosClient: CosmosClient | null = null;
+let database: Database | null = null;
 
 function initializeClient() {
   if (!cosmosClient) {
+    // 環境変数から設定を取得（実行時に取得）
+    const endpoint = process.env.AZURE_COSMOS_ENDPOINT;
+    const databaseId = process.env.AZURE_COSMOS_DATABASE_ID || 'remote-swe-agents';
     const connectionString = process.env.AZURE_COSMOS_CONNECTION_STRING;
 
     if (connectionString) {
@@ -38,6 +37,9 @@ function initializeClient() {
  */
 export function getContainer(containerName: string): Container {
   const { database } = initializeClient();
+  if (!database) {
+    throw new Error('Database not initialized');
+  }
   return database.container(containerName);
 }
 

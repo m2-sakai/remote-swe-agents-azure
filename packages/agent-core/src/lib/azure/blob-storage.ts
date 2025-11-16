@@ -12,18 +12,18 @@ import {
 } from '@azure/storage-blob';
 import { DefaultAzureCredential } from '@azure/identity';
 
-// 環境変数から設定を取得
-const accountName = process.env.AZURE_STORAGE_ACCOUNT_NAME!;
-const containerName = process.env.AZURE_STORAGE_CONTAINER_NAME || 'remote-swe-agents';
-
-let blobServiceClient: BlobServiceClient;
-let containerClient: ContainerClient;
+// クライアント初期化（遅延初期化）
+let blobServiceClient: BlobServiceClient | null = null;
+let containerClient: ContainerClient | null = null;
 
 /**
  * クライアント初期化
  */
 function initializeClient() {
   if (!blobServiceClient) {
+    // 環境変数から設定を取得（実行時に取得）
+    const accountName = process.env.AZURE_STORAGE_ACCOUNT_NAME;
+    const containerName = process.env.AZURE_STORAGE_CONTAINER_NAME || 'remote-swe-agents';
     const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
 
     if (connectionString) {
@@ -48,13 +48,16 @@ function initializeClient() {
  */
 export function getBlobClient(blobName: string): BlockBlobClient {
   const { containerClient } = initializeClient();
+  if (!containerClient) {
+    throw new Error('Container client not initialized');
+  }
   return containerClient.getBlockBlobClient(blobName);
 }
 
 /**
  * S3互換のBucket Name
  */
-export const BucketName = containerName;
+export const BucketName = process.env.AZURE_STORAGE_CONTAINER_NAME || 'remote-swe-agents';
 
 /**
  * ファイルをアップロード（S3 PutObjectCommand 互換）
@@ -123,7 +126,7 @@ export async function getSignedUrl(
 
   const sasToken = generateBlobSASQueryParameters(
     {
-      containerName,
+      containerName: process.env.AZURE_STORAGE_CONTAINER_NAME || 'remote-swe-agents',
       blobName: key,
       permissions: BlobSASPermissions.parse('r'), // 読み取り専用
       startsOn,
@@ -146,8 +149,11 @@ export async function exists(key: string): Promise<boolean> {
 /**
  * コンテナ内のBlobをリスト
  */
-export async function listBlobs(prefix?: string): Promise<string[]> {
+export async function listKeys(prefix?: string): Promise<string[]> {
   const { containerClient } = initializeClient();
+  if (!containerClient) {
+    throw new Error('Container client not initialized');
+  }
   const blobNames: string[] = [];
 
   const options = prefix ? { prefix } : undefined;
@@ -198,7 +204,7 @@ export default {
   deleteFile,
   getSignedUrl,
   exists,
-  listBlobs,
+  listKeys,
   writeBytesToKey,
   getBytesFromKey,
 };

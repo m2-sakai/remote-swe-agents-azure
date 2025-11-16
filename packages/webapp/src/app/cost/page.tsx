@@ -7,6 +7,9 @@ import CostBreakdown from './components/CostBreakdown';
 import DateSelector from './components/DateSelector';
 import { RefreshOnFocus } from '@/components/RefreshOnFocus';
 
+// 動的レンダリングを強制（ビルド時にデータフェッチしない）
+export const dynamic = 'force-dynamic';
+
 export default async function CostAnalysisPage({
   searchParams,
 }: {

@@ -7,6 +7,9 @@ import { queryByPartitionKey, ContainerName } from '@remote-swe-agents-azure/age
 import { PromptTemplate } from '@/app/sessions/new/schemas';
 import { getCustomAgents, getPreferences } from '@remote-swe-agents-azure/agent-core/lib';
 
+// 動的レンダリングを強制（ビルド時にデータフェッチしない）
+export const dynamic = 'force-dynamic';
+
 export default async function NewSessionPage() {
   const t = await getTranslations('new_session');
   const sessionsT = await getTranslations('sessions');

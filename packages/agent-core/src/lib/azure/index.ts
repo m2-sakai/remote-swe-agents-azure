@@ -31,5 +31,5 @@ export const {
   writeBytesToKey,
   getBytesFromKey,
   exists: blobExists,
-  listBlobs,
+  listKeys,
 } = blobModule;

@@ -6,14 +6,34 @@ import { updateSession } from './sessions';
 import { InstanceStatus } from '../schema';
 
 const credential = new DefaultAzureCredential();
-const subscriptionId = process.env.AZURE_SUBSCRIPTION_ID!;
-const resourceGroupName = process.env.AZURE_RESOURCE_GROUP_NAME!;
-const vmImageId = process.env.AZURE_VM_IMAGE_ID!; // Managed Image or Azure Compute Gallery Image ID
+const subscriptionId = process.env.AZURE_SUBSCRIPTION_ID || '';
+const resourceGroupName = process.env.AZURE_RESOURCE_GROUP_NAME || '';
+const vmImageId = process.env.AZURE_VM_IMAGE_ID || ''; // Managed Image or Azure Compute Gallery Image ID
 const vmSize = process.env.AZURE_VM_SIZE || 'Standard_D2s_v3';
-const subnetId = process.env.AZURE_SUBNET_ID!;
+const subnetId = process.env.AZURE_SUBNET_ID || '';
 
-const computeClient = new ComputeManagementClient(credential, subscriptionId);
-const networkClient = new NetworkManagementClient(credential, subscriptionId);
+let computeClient: ComputeManagementClient | null = null;
+let networkClient: NetworkManagementClient | null = null;
+
+function getComputeClient(): ComputeManagementClient {
+  if (!computeClient) {
+    if (!subscriptionId) {
+      throw new Error('AZURE_SUBSCRIPTION_ID environment variable is not set');
+    }
+    computeClient = new ComputeManagementClient(credential, subscriptionId);
+  }
+  return computeClient;
+}
+
+function getNetworkClient(): NetworkManagementClient {
+  if (!networkClient) {
+    if (!subscriptionId) {
+      throw new Error('AZURE_SUBSCRIPTION_ID environment variable is not set');
+    }
+    networkClient = new NetworkManagementClient(credential, subscriptionId);
+  }
+  return networkClient;
+}
 
 /**
  * Updates the instance status in Cosmos DB and sends a webapp event
@@ -38,7 +58,7 @@ export async function updateInstanceStatus(workerId: string, status: InstanceSta
 async function findWorkerVMInstance(workerId: string): Promise<string | null> {
   try {
     // List all VMs in the resource group
-    const vms = computeClient.virtualMachines.list(resourceGroupName);
+    const vms = getComputeClient().virtualMachines.list(resourceGroupName);
 
     for await (const vm of vms) {
       if (!vm.tags) continue;
@@ -58,7 +78,7 @@ async function findWorkerVMInstance(workerId: string): Promise<string | null> {
 
 async function getVMInstanceStatus(vmName: string): Promise<string | null> {
   try {
-    const instanceView = await computeClient.virtualMachines.instanceView(resourceGroupName, vmName);
+    const instanceView = await getComputeClient().virtualMachines.instanceView(resourceGroupName, vmName);
 
     if (instanceView.statuses && instanceView.statuses.length > 0) {
       // Find the PowerState status
@@ -78,7 +98,7 @@ async function getVMInstanceStatus(vmName: string): Promise<string | null> {
 
 async function startVMInstance(vmName: string): Promise<void> {
   try {
-    await computeClient.virtualMachines.beginStartAndWait(resourceGroupName, vmName);
+    await getComputeClient().virtualMachines.beginStartAndWait(resourceGroupName, vmName);
     console.log(`Started VM instance ${vmName}`);
   } catch (error) {
     console.error(`Error starting VM instance ${vmName}:`, error);
@@ -104,7 +124,7 @@ async function createVMInstance(workerId: string): Promise<{ instanceId: string 
       ],
     };
 
-    const nic = await networkClient.networkInterfaces.beginCreateOrUpdateAndWait(
+    const nic = await getNetworkClient().networkInterfaces.beginCreateOrUpdateAndWait(
       resourceGroupName,
       nicName,
       nicParams as any
@@ -155,7 +175,7 @@ async function createVMInstance(workerId: string): Promise<{ instanceId: string 
       },
     };
 
-    await computeClient.virtualMachines.beginCreateOrUpdateAndWait(resourceGroupName, vmName, vmParams as any);
+    await getComputeClient().virtualMachines.beginCreateOrUpdateAndWait(resourceGroupName, vmName, vmParams as any);
 
     console.log(`Created VM instance ${vmName} for workerId ${workerId}`);
     return { instanceId: vmName };
