@@ -1,7 +1,6 @@
 FROM node:22-alpine AS builder
 WORKDIR /build
 COPY package*.json ./
-COPY ./patches ./patches
 COPY packages/agent-core/package*.json ./packages/agent-core/
 COPY packages/webapp/package*.json ./packages/webapp/
 RUN --mount=type=cache,target=/root/.npm npm ci
