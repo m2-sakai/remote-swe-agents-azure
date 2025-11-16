@@ -3,8 +3,7 @@ import { ArrowLeft, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import NewSessionForm from './NewSessionForm';
-import { ddb, TableName } from '@remote-swe-agents-azure/agent-core/aws';
-import { QueryCommand } from '@aws-sdk/lib-dynamodb';
+import { queryByPartitionKey, ContainerName } from '@remote-swe-agents-azure/agent-core/azure';
 import { PromptTemplate } from '@/app/sessions/new/schemas';
 import { getCustomAgents, getPreferences } from '@remote-swe-agents-azure/agent-core/lib';
 
@@ -12,22 +11,15 @@ export default async function NewSessionPage() {
   const t = await getTranslations('new_session');
   const sessionsT = await getTranslations('sessions');
 
-  // Fetch templates directly from DynamoDB
+  // Fetch templates directly from Cosmos DB
   let templates: PromptTemplate[] = [];
-  const result = await ddb.send(
-    new QueryCommand({
-      TableName,
-      KeyConditionExpression: 'PK = :pk',
-      ExpressionAttributeValues: {
-        ':pk': 'prompt-template',
-      },
-      ScanIndexForward: false, // Sort by SK (createdAt) in descending order
-    })
-  );
+  const items = await queryByPartitionKey<PromptTemplate>(ContainerName, 'prompt-template');
+
   const preferences = await getPreferences();
   const customAgents = await getCustomAgents();
 
-  templates = (result.Items ?? []) as PromptTemplate[];
+  // Sort by createdAt in descending order
+  templates = items.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">

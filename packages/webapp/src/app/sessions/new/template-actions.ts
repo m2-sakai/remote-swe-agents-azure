@@ -2,8 +2,7 @@
 
 import { z } from 'zod';
 import { authActionClient } from '@/lib/safe-action';
-import { ddb, TableName } from '@remote-swe-agents-azure/agent-core/aws';
-import { PutCommand, UpdateCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
+import { putItem, updateItem, deleteItem, ContainerName } from '@remote-swe-agents-azure/agent-core/azure';
 import { revalidatePath } from 'next/cache';
 import { PromptTemplate } from './schemas';
 
@@ -25,17 +24,13 @@ export const createPromptTemplate = authActionClient.schema(createTemplateSchema
   const now = Date.now();
   const id = now.toString();
 
-  await ddb.send(
-    new PutCommand({
-      TableName,
-      Item: {
-        PK: 'prompt-template',
-        SK: id,
-        content,
-        createdAt: now,
-      } satisfies PromptTemplate,
-    })
-  );
+  await putItem(ContainerName, {
+    id: `prompt-template#${id}`,
+    PK: 'prompt-template',
+    SK: id,
+    content,
+    createdAt: now,
+  } satisfies PromptTemplate & { id: string; PK: string });
 
   revalidatePath('/sessions/new');
   return { success: true };
@@ -44,19 +39,7 @@ export const createPromptTemplate = authActionClient.schema(createTemplateSchema
 export const updatePromptTemplate = authActionClient.schema(updateTemplateSchema).action(async ({ parsedInput }) => {
   const { id, content } = parsedInput;
 
-  await ddb.send(
-    new UpdateCommand({
-      TableName,
-      Key: {
-        PK: 'prompt-template',
-        SK: id,
-      },
-      UpdateExpression: 'SET content = :content',
-      ExpressionAttributeValues: {
-        ':content': content,
-      },
-    })
-  );
+  await updateItem(ContainerName, `prompt-template#${id}`, 'prompt-template', { content });
 
   revalidatePath('/sessions/new');
   return { success: true };
@@ -65,15 +48,7 @@ export const updatePromptTemplate = authActionClient.schema(updateTemplateSchema
 export const deletePromptTemplate = authActionClient.schema(deleteTemplateSchema).action(async ({ parsedInput }) => {
   const { id } = parsedInput;
 
-  await ddb.send(
-    new DeleteCommand({
-      TableName,
-      Key: {
-        PK: 'prompt-template',
-        SK: id,
-      },
-    })
-  );
+  await deleteItem(ContainerName, `prompt-template#${id}`, 'prompt-template');
 
   revalidatePath('/sessions/new');
   return { success: true };

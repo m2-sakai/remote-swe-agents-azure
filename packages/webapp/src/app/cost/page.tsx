@@ -1,8 +1,7 @@
 import Header from '@/components/Header';
 import { getTranslations } from 'next-intl/server';
-import { ddb, TableName } from '@remote-swe-agents-azure/agent-core/aws';
+import { queryByPartitionKey, ContainerName } from '@remote-swe-agents-azure/agent-core/azure';
 import { calculateCost, getSessions, readMetadata } from '@remote-swe-agents-azure/agent-core/lib';
-import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 import CostSummary from './components/CostSummary';
 import CostBreakdown from './components/CostBreakdown';
 import DateSelector from './components/DateSelector';
@@ -44,17 +43,7 @@ export default async function CostAnalysisPage({
 
     // Query token usage records for this session
     // TODO: very inefficient. Maybe we should the token stats.
-    const result = await ddb.send(
-      new QueryCommand({
-        TableName,
-        KeyConditionExpression: 'PK = :pk',
-        ExpressionAttributeValues: {
-          ':pk': `token-${workerId}`,
-        },
-      })
-    );
-
-    const items = result.Items || [];
+    const items = await queryByPartitionKey(ContainerName, `token-${workerId}`);
 
     // Process each token usage record
     for (const item of items) {

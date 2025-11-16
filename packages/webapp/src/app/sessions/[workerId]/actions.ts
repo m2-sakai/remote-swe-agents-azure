@@ -2,7 +2,7 @@
 
 import { fetchTodoListSchema, sendMessageToAgentSchema, updateAgentStatusSchema, sendEventSchema } from './schemas';
 import { authActionClient } from '@/lib/safe-action';
-import { getContainer } from '@remote-swe-agents-azure/agent-core/azure';
+import { putItem, ContainerName } from '@remote-swe-agents-azure/agent-core/azure';
 import {
   getOrCreateWorkerInstance,
   renderUserMessage,
@@ -28,16 +28,17 @@ export const sendMessageToAgent = authActionClient
         image: {
           format: 'webp',
           source: {
-            s3Key: key,
+            blobKey: key,
           },
         },
       });
     });
 
-    const item: MessageItem & { id: string } = {
-      id: `${String(Date.now()).padStart(15, '0')}`,
+    const timestamp = String(Date.now()).padStart(15, '0');
+    const item: MessageItem = {
+      id: `message-${workerId}#${timestamp}`,
       PK: `message-${workerId}`,
-      SK: `${String(Date.now()).padStart(15, '0')}`,
+      SK: timestamp,
       content: JSON.stringify(content),
       role: 'user',
       tokenCount: 0,
@@ -45,9 +46,8 @@ export const sendMessageToAgent = authActionClient
       modelOverride,
     };
 
-    // Cosmos DB に保存
-    const container = getContainer('messages');
-    await container.items.upsert(item);
+    // Cosmos DBに保存
+    await putItem(ContainerName, item);
 
     await sendWorkerEvent(workerId, { type: 'onMessageReceived' });
 

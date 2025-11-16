@@ -8,8 +8,7 @@ import {
   noOpFiltering,
   getOrCreateWorkerInstance,
 } from '@remote-swe-agents-azure/agent-core/lib';
-import { ddb, TableName } from '@remote-swe-agents-azure/agent-core/aws';
-import { PutCommand } from '@aws-sdk/lib-dynamodb';
+import { putItem, ContainerName } from '@remote-swe-agents-azure/agent-core/azure';
 import { z } from 'zod';
 import { extractUserMessage, formatMessage } from '@/lib/message-formatter';
 import { MessageItem, modelTypeSchema } from '@remote-swe-agents-azure/agent-core/schema';
@@ -57,20 +56,17 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   const content = [{ text: message }];
 
   // Save the message
-  await ddb.send(
-    new PutCommand({
-      TableName,
-      Item: {
-        PK: `message-${sessionId}`,
-        SK: `${String(Date.now()).padStart(15, '0')}`,
-        content: JSON.stringify(content),
-        role: 'user',
-        tokenCount: 0,
-        messageType: 'userMessage',
-        modelOverride,
-      } satisfies MessageItem,
-    })
-  );
+  const timestamp = String(Date.now()).padStart(15, '0');
+  await putItem(ContainerName, {
+    id: `message-${sessionId}#${timestamp}`,
+    PK: `message-${sessionId}`,
+    SK: timestamp,
+    content: JSON.stringify(content),
+    role: 'user',
+    tokenCount: 0,
+    messageType: 'userMessage',
+    modelOverride,
+  } satisfies MessageItem & { id: string });
 
   // Start EC2 instance for the worker
   await getOrCreateWorkerInstance(sessionId);
@@ -117,7 +113,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         const msgBlocks = message.content?.filter((block) => isMsg(block.toolUse?.name)) ?? [];
 
         if (msgBlocks.length > 0) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           let messageText = msgBlocks.map((b) => (b.toolUse?.input as any)?.message ?? '').join('\n');
           messageText = formatMessage(messageText);
           if (messageText) {

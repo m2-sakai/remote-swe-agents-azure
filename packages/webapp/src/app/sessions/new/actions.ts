@@ -2,8 +2,7 @@
 
 import { createNewWorkerSchema } from './schemas';
 import { authActionClient } from '@/lib/safe-action';
-import { TransactWriteCommand } from '@aws-sdk/lib-dynamodb';
-import { ddb, TableName } from '@remote-swe-agents-azure/agent-core/aws';
+import { transactWrite, ContainerName } from '@remote-swe-agents-azure/agent-core/azure';
 import {
   getCustomAgent,
   getOrCreateWorkerInstance,
@@ -42,7 +41,7 @@ export const createNewWorker = authActionClient
           image: {
             format: 'webp',
             source: {
-              s3Key: key,
+              blobKey: key, // Changed from s3Key to blobKey
             },
           },
         });
@@ -50,47 +49,41 @@ export const createNewWorker = authActionClient
     }
 
     // Create session and initial message in a single transaction
-    await ddb.send(
-      new TransactWriteCommand({
-        TransactItems: [
-          {
-            Put: {
-              TableName,
-              Item: {
-                // Session record
-                PK: 'sessions',
-                SK: workerId,
-                workerId,
-                initialMessage: message,
-                createdAt: now,
-                updatedAt: now,
-                LSI1: String(now).padStart(15, '0'),
-                instanceStatus: 'starting',
-                sessionCost: 0,
-                agentStatus: 'pending',
-                initiator: `webapp#${userId}`,
-                customAgentId: agent?.SK,
-                runtimeType,
-              } satisfies SessionItem,
-            },
-          },
-          {
-            Put: {
-              TableName,
-              Item: {
-                PK: `message-${workerId}`,
-                SK: `${String(Date.now()).padStart(15, '0')}`,
-                content: JSON.stringify(content),
-                role: 'user',
-                tokenCount: 0,
-                messageType: 'userMessage',
-                modelOverride,
-              } satisfies MessageItem,
-            },
-          },
-        ],
-      })
-    );
+    await transactWrite(ContainerName, [
+      {
+        type: 'Put',
+        item: {
+          // Session record
+          id: `sessions#${workerId}`,
+          PK: 'sessions',
+          SK: workerId,
+          workerId,
+          initialMessage: message,
+          createdAt: now,
+          updatedAt: now,
+          LSI1: String(now).padStart(15, '0'),
+          instanceStatus: 'starting',
+          sessionCost: 0,
+          agentStatus: 'pending',
+          initiator: `webapp#${userId}`,
+          customAgentId: agent?.SK,
+          runtimeType,
+        } satisfies SessionItem,
+      },
+      {
+        type: 'Put',
+        item: {
+          id: `message-${workerId}#${String(Date.now()).padStart(15, '0')}`,
+          PK: `message-${workerId}`,
+          SK: `${String(Date.now()).padStart(15, '0')}`,
+          content: JSON.stringify(content),
+          role: 'user',
+          tokenCount: 0,
+          messageType: 'userMessage',
+          modelOverride,
+        } satisfies MessageItem,
+      },
+    ]);
 
     try {
       // Start worker instance for the worker
