@@ -3,10 +3,10 @@ WORKDIR /build
 COPY package*.json ./
 COPY packages/agent-core/package*.json ./packages/agent-core/
 COPY packages/webapp/package*.json ./packages/webapp/
-RUN --mount=type=cache,target=/root/.npm npm ci
+RUN npm ci
 COPY ./ ./
 RUN cd packages/agent-core && npm run build
-RUN --mount=type=cache,target=/build/packages/webapp/.next/cache cd packages/webapp && npm run build
+RUN cd packages/webapp && npm run build
 
 FROM node:22-alpine AS runner
 WORKDIR /app

@@ -33,10 +33,6 @@ resource containerRegistry 'Microsoft.ContainerRegistry/registries@2025-04-01' =
   }
   properties: {
     adminUserEnabled: true
-    networkRuleSet: {
-      defaultAction: 'Deny'
-      ipRules: ipRules
-    }
     policies: {
       quarantinePolicy: {
         status: 'disabled'

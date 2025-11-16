@@ -44,10 +44,6 @@ param networkSecurityGroups = [
     networkSecurityGroupName: 'm2-sakai-je-NSG-Vm-sub-6_0'
     securityRules: []
   }
-  {
-    networkSecurityGroupName: 'm2-sakai-je-NSG-Acr-sub-7_0'
-    securityRules: []
-  }
 ]
 
 // 仮想ネットワーク / サブネット
@@ -108,13 +104,6 @@ param subnets = [
     subnetName: 'Vm-sub-6_0'
     addressPrefix: '172.16.6.0/24'
     networkSecurityGroupName: 'm2-sakai-je-NSG-Vm-sub-6_0'
-    serviceEndpoints: []
-    delegations: []
-  }
-  {
-    subnetName: 'Acr-sub-7_0'
-    addressPrefix: '172.16.7.0/24'
-    networkSecurityGroupName: 'm2-sakai-je-NSG-Acr-sub-7_0'
     serviceEndpoints: []
     delegations: []
   }
@@ -187,5 +176,5 @@ param cosmosPrivateEndpointName = 'm2-sakai-je-PEP-COSMOS-01'
 param cosmosPrivateLinkServiceGroupIds = [
   'Sql'
 ]
-param cosmosPrivateEndpointSubnetName = 'sub-4_0'
+param cosmosPrivateEndpointSubnetName = 'Cosmos-sub-2_0'
 param cosmosPrivateDnsZoneName = 'privatelink.documents.azure.com'
