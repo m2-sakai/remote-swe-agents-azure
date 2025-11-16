@@ -2,6 +2,7 @@ export * from './prompt';
 export * from './messages';
 export * from './metadata';
 export * from './converse';
+export * from './converse-compat';
 export * from './sessions';
 export * from './worker-id';
 export * from './worker-manager';

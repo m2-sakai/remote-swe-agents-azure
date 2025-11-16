@@ -11,6 +11,7 @@
     "start:local": "tsx --env-file=.env.local src/local.ts"
   },
   "devDependencies": {
+    "@types/express": "^5.0.5",
     "@types/node": "^22.13.1",
     "esbuild": "^0.25.1",
     "prettier": "^3.5.1",

@@ -1,7 +1,4 @@
-import { Amplify } from 'aws-amplify';
-import { events } from 'aws-amplify/data';
 import { onMessageReceived, resume } from './agent';
-import { fromNodeProviderChain } from '@aws-sdk/credential-providers';
 import './common/signal-handler';
 import { setKillTimer, pauseKillTimer, restartKillTimer } from './common/kill-timer';
 import { CancellationToken } from './common/cancellation-token';
@@ -9,36 +6,11 @@ import { sendSystemMessage, updateInstanceStatus, workerEventSchema } from '@rem
 import { updateAgentStatusWithEvent } from './common/status';
 import { refreshSession } from './common/refresh-session';
 
+// Azure Event Hubs または Service Bus を使用する場合の準備
+// TODO: AWS Amplify Events を Azure Event Hubs/Service Bus に置き換える
 Object.assign(global, { WebSocket: require('ws') });
 
-const eventHttpEndpoint = process.env.EVENT_HTTP_ENDPOINT!;
-const awsRegion = process.env.AWS_REGION!;
-
-Amplify.configure(
-  {
-    API: {
-      Events: {
-        endpoint: `${eventHttpEndpoint}/event`,
-        region: awsRegion,
-        defaultAuthMode: 'iam',
-      },
-    },
-  },
-  {
-    Auth: {
-      credentialsProvider: {
-        getCredentialsAndIdentityId: async () => {
-          const provider = fromNodeProviderChain();
-          const credentials = await provider();
-          return {
-            credentials,
-          };
-        },
-        clearCredentialsAndIdentityId: async () => {},
-      },
-    },
-  }
-);
+const eventHttpEndpoint = process.env.EVENT_HTTP_ENDPOINT;
 
 class ConverseSessionTracker {
   private sessions: { isFinished: boolean; cancellationToken: CancellationToken }[] = [];
@@ -116,44 +88,39 @@ export const main = async (workerId: string) => {
   isStarted[workerId] = true;
   const tracker = new ConverseSessionTracker(workerId);
 
-  const broadcast = await events.connect('/event-bus/broadcast');
-  broadcast.subscribe({
-    next: (data) => {
-      console.log('received broadcast', data);
-    },
-    error: (err) => console.log(err),
-  });
+  // TODO: Azure Service Bus または Event Hubs を使用したイベント購読
+  // 現在は簡易的なポーリング方式で実装
+  let pollingInterval: NodeJS.Timeout | null = null;
 
-  const unicast = await events.connect(`/event-bus/worker/${workerId}`);
-  unicast.subscribe({
-    next: async (data) => {
-      const { data: event, error, success } = workerEventSchema.safeParse(data.event);
-      if (!success || error) {
-        console.log(`The worker event does not conform to the schema. Ignoring... ${JSON.stringify(data)}`);
-        console.log(error);
-        return;
+  const startEventPolling = () => {
+    // 5秒ごとにセッションの状態をチェック
+    pollingInterval = setInterval(async () => {
+      try {
+        // セッションの状態をチェック（必要に応じて実装）
+        // 現時点では、エージェントはwebappからのメッセージを受信するまで待機
+      } catch (error) {
+        console.error('Error polling events:', error);
       }
-      const type = event.type;
-      if (type == 'onMessageReceived') {
-        tracker.cancelCurrentSessions();
-        tracker.startOnMessageReceived();
-      } else if (type == 'forceStop') {
-        tracker.cancelCurrentSessions(async () => {
-          // Update agent status to pending after force stop
-          await updateAgentStatusWithEvent(workerId, 'pending');
-          await sendSystemMessage(workerId, 'Agent work was stopped.');
-        });
-      } else if (type == 'sessionUpdated') {
-        await refreshSession(workerId);
-      }
-    },
-    error: (err) => console.log(err),
-  });
+    }, 5000);
+  };
+
+  const stopEventPolling = () => {
+    if (pollingInterval) {
+      clearInterval(pollingInterval);
+      pollingInterval = null;
+    }
+  };
+
+  startEventPolling();
+
+  // プロセス終了時にポーリングを停止
+  process.on('SIGINT', stopEventPolling);
+  process.on('SIGTERM', stopEventPolling);
 
   setKillTimer(workerId);
 
   try {
-    // Update instance status to "running" in DynamoDB
+    // Update instance status to "running" in Cosmos DB
     await updateInstanceStatus(workerId, 'running');
 
     await sendSystemMessage(workerId, 'the instance has successfully launched!');

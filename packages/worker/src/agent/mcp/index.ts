@@ -1,5 +1,5 @@
 import { MCPClient } from './mcp-client';
-import { Tool } from '@aws-sdk/client-bedrock-runtime';
+import { Tool } from '@remote-swe-agents-azure/agent-core/lib';
 import { McpConfig } from '@remote-swe-agents-azure/agent-core/schema';
 
 let clientsMap: { [key: string]: { name: string; client: MCPClient }[] } = {};

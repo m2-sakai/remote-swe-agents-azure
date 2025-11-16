@@ -1,4 +1,4 @@
-import { Tool } from '@aws-sdk/client-bedrock-runtime';
+import { Tool } from '@remote-swe-agents-azure/agent-core/lib';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
@@ -17,9 +17,7 @@ export class MCPClient {
     this.mcp = new Client(
       { name: 'mcp-client-cli', version: '1.0.0' },
       {
-        capabilities: {
-          tools: {},
-        },
+        capabilities: {},
       }
     );
   }
@@ -67,7 +65,7 @@ export class MCPClient {
       return {
         toolSpec: {
           name: tool.name,
-          description: tool.description,
+          description: tool.description || '',
           inputSchema: { json: JSON.parse(JSON.stringify(tool.inputSchema)) },
         },
       };

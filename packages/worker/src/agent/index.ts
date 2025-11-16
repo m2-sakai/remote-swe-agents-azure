@@ -1,9 +1,10 @@
 import {
-  ConverseCommandInput,
   Message,
   ThrottlingException,
   ToolResultContentBlock,
-} from '@aws-sdk/client-bedrock-runtime';
+  bedrockConverse,
+  ConverseCommandInput,
+} from '@remote-swe-agents-azure/agent-core/lib';
 import {
   getConversationHistory,
   middleOutFiltering,
@@ -23,7 +24,6 @@ import {
   getCustomAgent,
 } from '@remote-swe-agents-azure/agent-core/lib';
 import pRetry, { AbortError } from 'p-retry';
-import { bedrockConverse } from '@remote-swe-agents-azure/agent-core/lib';
 import { getMcpToolSpecs, tryExecuteMcpTool } from './mcp';
 import {
   addIssueCommentTool,
@@ -202,7 +202,7 @@ const agentLoop = async (workerId: string, cancellationToken: CancellationToken)
     [...new Set([firstCachePoint, secondCachePoint])].forEach((cp) => {
       const message = messages[cp];
       if (message?.content) {
-        message.content = [...message.content, { cachePoint: { type: 'default' } }];
+        message.content = [...message.content, { cachePoint: { type: 'default' } } as any];
       }
     });
     firstCachePoint = secondCachePoint;
@@ -238,7 +238,8 @@ const agentLoop = async (workerId: string, cancellationToken: CancellationToken)
           return res;
         } catch (e) {
           if (e instanceof ThrottlingException) {
-            console.log(`retrying... ${e.message}`);
+            const error = e as Error;
+            console.log(`retrying... ${error.message}`);
             throw e;
           }
           if (e instanceof MaxTokenExceededError) {
@@ -279,20 +280,20 @@ const agentLoop = async (workerId: string, cancellationToken: CancellationToken)
         throw new Error('output is null');
       }
       const toolUseMessage = res.output.message;
-      const toolUseRequests = toolUseMessage.content?.filter((c) => 'toolUse' in c) ?? [];
+      const toolUseRequests = toolUseMessage.content?.filter((c: any) => 'toolUse' in c) ?? [];
       const toolResultMessage: Message = { role: 'user', content: [] };
 
       for (const request of toolUseRequests) {
-        const toolUse = request.toolUse;
+        const toolUse = (request as any).toolUse;
         const toolUseId = toolUse?.toolUseId;
         if (toolUse == null || toolUseId == null) {
           throw new Error('toolUse is null');
         }
         // Extract reasoning content if available
-        const reasoningBlocks = toolUseMessage.content?.filter((block) => block.reasoningContent) ?? [];
+        const reasoningBlocks = toolUseMessage.content?.filter((block: any) => block.reasoningContent) ?? [];
         let reasoningText: string | undefined;
         if (reasoningBlocks[0]) {
-          reasoningText = reasoningBlocks[0].reasoningContent?.reasoningText?.text;
+          reasoningText = (reasoningBlocks[0] as any).reasoningContent?.reasoningText?.text;
         }
 
         await sendWebappEvent(workerId, {
@@ -347,12 +348,12 @@ const agentLoop = async (workerId: string, cancellationToken: CancellationToken)
               throw new Error(`invalid input: ${error}`);
             }
 
-            console.log(`using tool: ${name} ${JSON.stringify(input)}`);
+            console.log(`using tool: ${name} ${JSON.stringify(input)}}`);
             const result = await tool.handler(input as any, { toolUseId, workerId, globalPreferences });
             if (typeof result == 'string') {
               toolResult = result;
             } else {
-              toolResultObject = result;
+              toolResultObject = result as any;
             }
           }
 
@@ -360,7 +361,7 @@ const agentLoop = async (workerId: string, cancellationToken: CancellationToken)
             lastReportedTime = Date.now();
             const { data: input, success } = reportProgressTool.schema.safeParse(toolInput);
             if (success) {
-              conversation += `Assistant: ${input.message}\n`;
+              conversation += `Assistant: ${input.progress}\n`;
             }
           }
           if (name == cloneRepositoryTool.name) {
@@ -386,16 +387,16 @@ const agentLoop = async (workerId: string, cancellationToken: CancellationToken)
           type: 'toolResult',
           toolName: toolUse.name ?? '',
           toolUseId: toolUseId,
-          output: toolResult ? toolResult : (toolResultObject?.map((r) => r.text).join('\n') ?? ''),
+          output: toolResult ? toolResult : (toolResultObject?.map((r: any) => r.text).join('\n') ?? ''),
         });
       }
 
-      // Save both tool use and tool result messages atomically to DynamoDB
+      // Save both tool use and tool result messages atomically to Cosmos DB
       // Pass response data to save token count information
       const savedItems = await saveConversationHistoryAtomic(
         workerId,
-        toolUseMessage,
-        toolResultMessage,
+        toolUseMessage as any,
+        toolResultMessage as any,
         outputTokenCount,
         detectedBudget
       );
@@ -410,9 +411,10 @@ const agentLoop = async (workerId: string, cancellationToken: CancellationToken)
       }
 
       // Save assistant message with token count
-      await saveConversationHistory(workerId, finalMessage, outputTokenCount, 'assistant', detectedBudget);
+      await saveConversationHistory(workerId, finalMessage as any, outputTokenCount, 'assistant', detectedBudget);
       // When reasoning is enabled, reasoning results are in content[0].
-      const responseText = finalMessage.content?.at(-1)?.text ?? finalMessage.content?.at(0)?.text ?? '';
+      const responseText =
+        (finalMessage.content?.at(-1) as any)?.text ?? (finalMessage.content?.at(0) as any)?.text ?? '';
       // remove <thinking> </thinking> part with multiline support
       const responseTextWithoutThinking = responseText.replace(/<thinking>[\s\S]*?<\/thinking>/g, '');
       await sendSystemMessage(workerId, responseTextWithoutThinking, true);

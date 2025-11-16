@@ -1,5 +1,5 @@
 import { sendSystemMessage, updateInstanceStatus } from '@remote-swe-agents-azure/agent-core/lib';
-import { stopMyself } from './ec2';
+import { stopMyself } from './azure-vm';
 import { randomBytes } from 'crypto';
 
 let killTimer: NodeJS.Timeout | undefined = undefined;
