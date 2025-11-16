@@ -129,8 +129,10 @@ param appServiceName string
 param appKind string = 'app,linux'
 @description('App Service のランタイムスタック')
 param runtimeStack string
+@description('Vnet統合のサブネットの名前')
+param vnetIntegrationSubnetName string
 module appServicePlanModule '../modules/app-service-plan/asp_module.bicep' = {
-  name: 'appServicePlanModule'
+  name: take(appServicePlanName, 64)
   params: {
     location: location
     tag: tag
@@ -139,7 +141,7 @@ module appServicePlanModule '../modules/app-service-plan/asp_module.bicep' = {
   }
 }
 module appServiceModule '../modules/app-service/app_module.bicep' = {
-  name: 'appServiceModule'
+  name: take(appServiceName, 64)
   params: {
     appServiceName: appServiceName
     appServicePlanName: appServicePlanName
@@ -153,5 +155,17 @@ module appServiceModule '../modules/app-service/app_module.bicep' = {
     applicationInsightsModule
     appServicePlanModule
     subnetModules
+  ]
+}
+module appServiceVnetIntegrationModule '../modules/app-service/app_add-vnet-integration_module.bicep' = {
+  name: '${take(appServiceName, 40)}_VnetIntegration'
+  params: {
+    appServiceName: appServiceName
+    virtualNetworkName: virtualNetworkName
+    subnetName: vnetIntegrationSubnetName
+  }
+  dependsOn: [
+    appServiceModule
+    virtualNetworkModule
   ]
 }
