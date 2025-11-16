@@ -17,9 +17,12 @@ ENV NODE_ENV=production
 # Next.js standalone出力をコピー
 COPY --from=builder /build/packages/webapp/.next/standalone ./
 COPY --from=builder /build/packages/webapp/.next/static ./packages/webapp/.next/static
-COPY --from=builder /build/packages/webapp/public ./packages/webapp/public
+COPY --from=builder /build/packages/webapp/run.sh ./run.sh
+
+RUN ln -s /tmp/cache ./packages/webapp/.next/cache
 
 EXPOSE 3000
 
 # Next.js サーバーを起動
-CMD ["node", "packages/webapp/server.js"]
+ENTRYPOINT ["sh"]
+CMD ["run.sh"]
