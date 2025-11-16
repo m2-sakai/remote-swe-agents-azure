@@ -169,3 +169,45 @@ module appServiceVnetIntegrationModule '../modules/app-service/app_add-vnet-inte
     virtualNetworkModule
   ]
 }
+
+// Cosmos DB
+@description('Cosmos DB のリソース名')
+@minLength(1)
+param cosmosDbName string
+@description('Cosmos DB用プライベートエンドポイントのリソース名')
+@minLength(2)
+@maxLength(64)
+param cosmosPrivateEndpointName string
+@description('Cosmos DB用接続する必要があるリモートリソースから取得したグループのID')
+param cosmosPrivateLinkServiceGroupIds array
+@description('Cosmos DB用仮想ネットワークのサブネット名')
+@minLength(1)
+@maxLength(80)
+param cosmosPrivateEndpointSubnetName string
+@description('Cosmos DB用プライベートDNSゾーンの情報')
+param cosmosPrivateDnsZoneName string
+module cosmosDbModule '../modules/cosmos-db/cosmos_module.bicep' = {
+  name: take(cosmosDbName, 64)
+  params: {
+    location: location
+    tag: tag
+    cosmosDbName: cosmosDbName
+  }
+}
+module cosmosDbPrivateEndpointModule '../modules/private-endpoint/pep_module.bicep' = {
+  name: take(cosmosPrivateEndpointName, 64)
+  params: {
+    location: location
+    tag: tag
+    privateEndpointName: cosmosPrivateEndpointName
+    privateLinkServiceId: cosmosDbModule.outputs.cosmosDbId
+    privateLinkServiceGroupIds: cosmosPrivateLinkServiceGroupIds
+    virtualNetworkName: virtualNetworkName
+    subnetName: cosmosPrivateEndpointSubnetName
+    privateDnsZoneName: cosmosPrivateDnsZoneName
+  }
+  dependsOn: [
+    virtualNetworkModule
+    pdzModule
+  ]
+}

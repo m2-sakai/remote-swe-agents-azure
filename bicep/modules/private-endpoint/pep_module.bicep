@@ -17,18 +17,6 @@ param privateLinkServiceId string
 @description('接続する必要があるリモートリソースから取得したグループのID')
 param privateLinkServiceGroupIds array
 
-@description('リモートリソースへの接続の状態に関する読み取り専用情報のコレクション')
-param privateLinkServiceConnectionState object = {
-  status: 'Approved'
-  actionsRequired: 'None'
-}
-
-@description('プライベートIPを静的に割り当てるか')
-param assignStaticPrivateIP bool = false
-
-@description('プライベートIPを静的に割り当てる場合のIPアドレス情報')
-param privateIPAddressInfo object = {}
-
 @description('仮想ネットワークのリソース名')
 param virtualNetworkName string
 
@@ -64,7 +52,10 @@ resource privateEndpoint 'Microsoft.Network/privateEndpoints@2024-10-01' = {
         properties: {
           privateLinkServiceId: privateLinkServiceId
           groupIds: privateLinkServiceGroupIds
-          privateLinkServiceConnectionState: privateLinkServiceConnectionState
+          privateLinkServiceConnectionState: {
+            status: 'Approved'
+            actionsRequired: 'None'
+          }
         }
       }
     ]
@@ -73,16 +64,7 @@ resource privateEndpoint 'Microsoft.Network/privateEndpoints@2024-10-01' = {
     subnet: {
       id: existingSubnet.id
     }
-    ipConfigurations: assignStaticPrivateIP ? [
-      {
-        name: privateIPAddressInfo.privateIPAddressName
-        properties: {
-          privateIPAddress: privateIPAddressInfo.privateIPAddress
-          groupId: privateIPAddressInfo.privateIPAddressGroupId
-          memberName: privateIPAddressInfo.privateIPAddressMemberName
-        }
-      }
-    ] : []
+    ipConfigurations: []
     customDnsConfigs: []
   }
 }

@@ -139,3 +139,12 @@ param appServicePlanSkuName = 'P0V3'
 param appServiceName = 'm2-sakai-je-APP-01'
 param runtimeStack = 'NODE|22-lts'
 param vnetIntegrationSubnetName = 'outbound-sub-0_0'
+
+// Cosmos DB
+param cosmosDbName = 'm2-sakai-je-COSMOS-01'
+param cosmosPrivateEndpointName = 'm2-sakai-je-PEP-COSMOS-01'
+param cosmosPrivateLinkServiceGroupIds = [
+  'Sql'
+]
+param cosmosPrivateEndpointSubnetName = 'sub-4_0'
+param cosmosPrivateDnsZoneName = 'privatelink.documents.azure.com'
