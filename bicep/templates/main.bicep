@@ -135,6 +135,62 @@ module containerRegistryModule '../modules/container-registy/cr_module.bicep' = 
   ]
 }
 
+// Key Vault
+@description('Key Vaultのリソース名')
+@minLength(1)
+param keyVaultName string
+@description('Key Vault用プライベートエンドポイントのリソース名')
+@minLength(2)
+@maxLength(64)
+param kvPrivateEndpointName string
+@description('Key Vault用接続する必要があるリモートリソースから取得したグループのID')
+param kvPrivateLinkServiceGroupIds array
+@description('Key Vault用仮想ネットワークのサブネット名')
+@minLength(1)
+@maxLength(80)
+param kvPrivateEndpointSubnetName string
+@description('Key Vault用プライベートDNSゾーンの情報')
+param kvPrivateDnsZoneName string
+@description('割り当てるロールID')
+@minLength(1)
+param kvRoleDefinitionId string
+module kvModule '../modules/key-vault/kv_module.bicep' = {
+  name: take(keyVaultName, 64)
+  params: {
+    tag: tag
+    keyVaultName: keyVaultName
+  }
+  dependsOn: []
+}
+module kvDbPrivateEndpointModule '../modules/private-endpoint/pep_module.bicep' = {
+  name: take(kvPrivateEndpointName, 64)
+  params: {
+    tag: tag
+    privateEndpointName: kvPrivateEndpointName
+    privateLinkServiceId: kvModule.outputs.keyVaultId
+    privateLinkServiceGroupIds: kvPrivateLinkServiceGroupIds
+    virtualNetworkName: virtualNetworkName
+    subnetName: kvPrivateEndpointSubnetName
+    privateDnsZoneName: kvPrivateDnsZoneName
+  }
+  dependsOn: [
+    virtualNetworkModule
+    pdzModule
+  ]
+}
+module kvAddRoleModule '../modules/key-vault/kv_add-role_module.bicep' = {
+  name: '${take(keyVaultName, 40)}_AddRole'
+  params: {
+    keyVaultName: keyVaultName
+    roleDefinitionId: kvRoleDefinitionId
+    userAssignedIdentityName: userAssignedIdentityName
+  }
+  dependsOn: [
+    kvModule
+    managedIdentityModule
+  ]
+}
+
 // App Service Plan / App Service
 @description('App Service Plan の名前')
 @minLength(1)
@@ -155,7 +211,6 @@ param aplAppSettings array
 module appServicePlanModule '../modules/app-service-plan/asp_module.bicep' = {
   name: take(appServicePlanName, 64)
   params: {
-    location: location
     tag: tag
     appServicePlanName: appServicePlanName
     skuName: appServicePlanSkuName
@@ -211,7 +266,6 @@ param cosmosPrivateDnsZoneName string
 module cosmosDbModule '../modules/cosmos-db/cosmos_module.bicep' = {
   name: take(cosmosDbName, 64)
   params: {
-    location: location
     tag: tag
     cosmosDbName: cosmosDbName
   }
@@ -219,7 +273,6 @@ module cosmosDbModule '../modules/cosmos-db/cosmos_module.bicep' = {
 module cosmosDbPrivateEndpointModule '../modules/private-endpoint/pep_module.bicep' = {
   name: take(cosmosPrivateEndpointName, 64)
   params: {
-    location: location
     tag: tag
     privateEndpointName: cosmosPrivateEndpointName
     privateLinkServiceId: cosmosDbModule.outputs.cosmosDbId
@@ -231,5 +284,16 @@ module cosmosDbPrivateEndpointModule '../modules/private-endpoint/pep_module.bic
   dependsOn: [
     virtualNetworkModule
     pdzModule
+  ]
+}
+module cosmosAddRoleModule '../modules/cosmos-db/cosmos_add-role_module.bicep' = {
+  name: '${take(cosmosDbName, 40)}_AddRole'
+  params: {
+    cosmosDbName: cosmosDbName
+    userAssignedIdentityName: userAssignedIdentityName
+  }
+  dependsOn: [
+    cosmosDbModule
+    managedIdentityModule
   ]
 }

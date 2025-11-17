@@ -141,6 +141,16 @@ param privateDnsZones = [
 param containerRegistryName = 'm2sakaijeacr01'
 param skuName = 'Basic'
 
+// Key Vault
+param keyVaultName = 'm2-sakai-je-KV-01'
+param kvPrivateEndpointName = 'm2-sakai-je-PEP-KV-01'
+param kvPrivateLinkServiceGroupIds = [
+  'vault'
+]
+param kvPrivateEndpointSubnetName = 'KV-sub-4_0'
+param kvPrivateDnsZoneName = 'privatelink.vaultcore.azure.net'
+param kvRoleDefinitionId = '4633458b-17de-408a-b874-0445c86b69e6'
+
 // App Service Plan / App Service
 param appServicePlanName = 'm2-sakai-je-ASP-01'
 param appServicePlanSkuName = 'P0V3'
@@ -150,7 +160,23 @@ param vnetIntegrationSubnetName = 'Outbound-sub-0_0'
 param aplAppSettings = [
   {
     name: 'SKIP_AUTH'
-    value: 'true'
+    value: 'false'
+  }
+  {
+    name: 'AZURE_AD_CLIENT_ID'
+    value: '40d43ebb-7e58-4460-ae5f-d29a27f1e8eb'
+  }
+  {
+    name: 'AZURE_AD_CLIENT_SECRET'
+    value: '@Microsoft.KeyVault(VaultName=m2-sakai-je-KV-01;SecretName=AzureAdClientSecret)'
+  }
+  {
+    name: 'AZURE_AD_REDIRECT_URI'
+    value: 'https://${appServiceName}.azurewebsites.net/api/auth/callback'
+  }
+  {
+    name: 'AZURE_AD_TENANT_ID'
+    value: 'fd35dd5c-69a6-4265-96e7-8702fe2bcb07'
   }
   {
     name: 'DEV_USER_ID'

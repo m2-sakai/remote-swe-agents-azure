@@ -4,7 +4,7 @@ targetScope = 'resourceGroup'
 param cosmosDbName string
 
 @description('マネージドIDのリソース名')
-@minLength(3)
+@minLength(1)
 @maxLength(128)
 param userAssignedIdentityName string
 
