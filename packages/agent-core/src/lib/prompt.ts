@@ -1,5 +1,5 @@
 import { reportProgressTool } from '../tools/report-progress';
-import { getContainer } from './azure/cosmos';
+import { getContainer, ContainerName } from './azure';
 
 export const renderToolResult = (props: { toolResult: string; forceReport: boolean }) => {
   return `
@@ -23,7 +23,7 @@ User sent you a message. Please use ${reportProgressTool.name} tool to send a re
 `.trim();
 };
 
-const CONTAINER_NAME = 'config';
+const CONTAINER_NAME = ContainerName;
 
 /**
  * Global config keys for Cosmos DB

@@ -1,8 +1,8 @@
-import { getContainer } from './azure/cosmos';
+import { getContainer, ContainerName } from './azure';
 import { ApiKeyItem } from '../schema';
 import crypto from 'crypto';
 
-const CONTAINER_NAME = 'api-keys';
+const CONTAINER_NAME = ContainerName;
 
 /**
  * Create a new API key

@@ -2,7 +2,7 @@ import sharp from 'sharp';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import path from 'path';
 import { tmpdir } from 'os';
-import { getContainer } from './azure/cosmos';
+import { getContainer, ContainerName } from './azure';
 import { writeBytesToKey, getBytesFromKey } from './azure/blob-storage';
 import { sendWebappEvent } from './events';
 import { getWebappSessionUrl } from './webapp-origin';
@@ -25,7 +25,7 @@ type Message = {
   content?: MessageContentPart[];
 };
 
-const CONTAINER_NAME = 'messages';
+const CONTAINER_NAME = ContainerName;
 
 // Maximum input token count before applying middle-out strategy
 export const MAX_INPUT_TOKEN = 80_000;

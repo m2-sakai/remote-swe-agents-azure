@@ -1,9 +1,9 @@
 import { CustomAgent, EmptyMcpConfig, mcpConfigSchema } from '../schema';
-import { getContainer } from './azure/cosmos';
+import { getContainer, ContainerName } from './azure';
 import { randomBytes } from 'crypto';
 import z from 'zod';
 
-const CONTAINER_NAME = 'custom-agents';
+const CONTAINER_NAME = ContainerName;
 
 const validateMcpConfig = (mcpConfig: string): void => {
   try {

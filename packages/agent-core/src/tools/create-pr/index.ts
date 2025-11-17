@@ -3,13 +3,13 @@ import { writeFileSync } from 'fs';
 import { join } from 'path';
 import { executeCommand } from '../command-execution';
 import { ToolDefinition, zodToJsonSchemaBody } from '../../private/common/lib';
-import { getContainer } from '../../lib/azure/cosmos';
+import { getContainer, ContainerName } from '../../lib/azure';
 import { ciTool } from '../ci';
 import { appendWorkerIdMetadata } from '../../lib/worker-id';
 import { getWebappSessionUrl } from '../../lib/webapp-origin';
 import { GlobalPreferences } from '../../schema';
 
-const CONTAINER_NAME = 'artifacts';
+const CONTAINER_NAME = ContainerName;
 
 const inputSchema = z.object({
   title: z.string().describe('Title of the pull request'),

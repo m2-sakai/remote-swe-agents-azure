@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { getContainer } from './azure/cosmos';
+import { getContainer, ContainerName } from './azure';
 import { GlobalPreferences, globalPreferencesSchema, updateGlobalPreferenceSchema } from '../schema';
 
-const CONTAINER_NAME = 'preferences';
+const CONTAINER_NAME = ContainerName;
 const ITEM_ID = 'general';
 const PARTITION_KEY = 'global-config';
 

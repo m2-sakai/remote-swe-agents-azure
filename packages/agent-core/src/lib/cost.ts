@@ -1,8 +1,8 @@
-import { getContainer } from './azure/cosmos';
+import { getContainer, ContainerName } from './azure';
 import { modelConfigs } from '../schema/model';
 import { updateSession } from './sessions';
 
-const CONTAINER_NAME = 'token-usage';
+const CONTAINER_NAME = ContainerName;
 
 // Calculate cost in USD based on token usage
 export const calculateCost = (

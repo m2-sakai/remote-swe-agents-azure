@@ -1,6 +1,6 @@
-import { getContainer } from './azure/cosmos';
+import { getContainer, ContainerName } from './azure';
 
-const CONTAINER_NAME = 'metadata';
+const CONTAINER_NAME = ContainerName;
 
 /**
  * Write metadata to Cosmos DB.

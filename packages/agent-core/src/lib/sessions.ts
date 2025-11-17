@@ -1,9 +1,9 @@
 import { z } from 'zod';
-import { getContainer } from './azure/cosmos';
+import { getContainer, ContainerName } from './azure';
 import { AgentStatus, SessionItem, sessionItemSchema } from '../schema';
 import { azureOpenAIConverse } from './converse';
 
-const CONTAINER_NAME = 'sessions';
+const CONTAINER_NAME = ContainerName;
 
 /**
  * Get session information from Cosmos DB
@@ -13,7 +13,8 @@ const CONTAINER_NAME = 'sessions';
 export async function getSession(workerId: string): Promise<SessionItem | undefined> {
   try {
     const container = getContainer(CONTAINER_NAME);
-    const { resource } = await container.item(workerId, 'sessions').read<SessionItem>();
+    const PK = 'sessions';
+    const { resource } = await container.item(workerId, PK).read<SessionItem>();
     return resource;
   } catch (error: any) {
     if (error.code === 404) {
@@ -128,9 +129,10 @@ type UpdateSessionParams = Partial<Omit<SessionItem, 'PK' | 'SK' | 'createdAt'>>
  */
 export const updateSession = async (workerId: string, params: UpdateSessionParams): Promise<void> => {
   const container = getContainer(CONTAINER_NAME);
+  const PK = 'sessions';
 
   // Get existing item
-  const { resource: existing } = await container.item(workerId, 'sessions').read<SessionItem>();
+  const { resource: existing } = await container.item(workerId, PK).read<SessionItem>();
 
   if (!existing) {
     throw new Error(`Session not found: ${workerId}`);
@@ -144,5 +146,5 @@ export const updateSession = async (workerId: string, params: UpdateSessionParam
   };
 
   // Replace the item
-  await container.item(workerId, 'sessions').replace(updated);
+  await container.item(workerId, PK).replace(updated);
 };
