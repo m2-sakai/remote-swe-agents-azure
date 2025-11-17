@@ -12,7 +12,6 @@ export async function middleware(request: NextRequest) {
 
   // 開発環境: 認証をスキップ
   if (process.env.SKIP_AUTH === 'true') {
-    console.log('[DEV MODE] Authentication skipped');
     return response;
   }
 
@@ -20,11 +19,9 @@ export async function middleware(request: NextRequest) {
 
   try {
     // セッションCookieをチェック
-    console.log('[Middleware] request.cookies', request.cookies);
     const sessionCookie = request.cookies.get('session');
 
     if (!sessionCookie?.value) {
-      console.log('[Middleware] No session cookie found, redirecting to sign-in');
       return NextResponse.redirect(new URL('/sign-in', appOrigin));
     }
 
@@ -33,15 +30,6 @@ export async function middleware(request: NextRequest) {
     const now = Math.floor(Date.now() / 1000);
     const expiresOn = session?.expiresOn || 0;
     const timeRemaining = expiresOn - now;
-
-    console.log('[Middleware] Session check:', {
-      userId: session?.userId,
-      username: session?.username,
-      expiresOn,
-      now,
-      timeRemainingMinutes: Math.floor(timeRemaining / 60),
-      isExpired: timeRemaining < 300,
-    });
 
     // ユーザーIDと有効期限をチェック
     const authenticated =
@@ -54,10 +42,8 @@ export async function middleware(request: NextRequest) {
       return response;
     }
 
-    console.log('[Middleware] Authentication failed, redirecting to sign-in');
     return NextResponse.redirect(new URL('/sign-in', appOrigin));
   } catch (error) {
-    console.log('[Middleware] Authentication error:', error);
     return NextResponse.redirect(new URL('/sign-in', appOrigin));
   }
 }

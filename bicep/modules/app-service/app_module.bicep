@@ -41,12 +41,6 @@ param ipSecurityRestrictions array = []
 @description('SCMのIP制限のルール')
 param scmIpSecurityRestrictions array = []
 
-@description('コマンドライン')
-param appCommandLine string = ''
-
-@description('ヘルスチェックパス')
-param healthCheckPath string = '/'
-
 resource existingUserAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' existing = {
   name: userAssignedIdentityName
 }
@@ -143,7 +137,7 @@ resource appService 'Microsoft.Web/sites@2024-11-01' = {
       scmType: 'none'
       use32BitWorkerProcess: true
       webSocketsEnabled: false
-      appCommandLine: appCommandLine
+      appCommandLine: ''
       managedPipelineMode: 'Integrated'
       virtualApplications: [
         {
@@ -171,12 +165,11 @@ resource appService 'Microsoft.Web/sites@2024-11-01' = {
       ftpsState: 'Disabled'
       preWarmedInstanceCount: 0
       elasticWebAppScaleLimit: 0
-      healthCheckPath: healthCheckPath
       functionsRuntimeScaleMonitoringEnabled: false
       azureStorageAccounts: {}
     }
     scmSiteAlsoStopped: false
-    clientAffinityEnabled: false
+    clientAffinityEnabled: true
     clientCertEnabled: false
     clientCertMode: 'Required'
     hostNamesDisabled: false

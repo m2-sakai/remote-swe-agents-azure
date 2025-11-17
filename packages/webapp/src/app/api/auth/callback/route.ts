@@ -36,31 +36,15 @@ export async function GET(request: NextRequest) {
     // HTTPSかどうかを判定（本番環境では必ずHTTPS）
     const isProduction = process.env.NODE_ENV === 'production' || appOrigin.startsWith('https://');
 
-    console.log('[Auth] Session saved:', {
-      userId: !!minimalSession.userId,
-      username: minimalSession.username,
-      expiresOn: minimalSession.expiresOn,
-      expiresInMinutes: minimalSession.expiresOn
-        ? Math.floor((minimalSession.expiresOn - Date.now() / 1000) / 60)
-        : 'N/A',
-      isProduction,
-    });
-
     // ホームページにリダイレクト（Cookieをレスポンスに設定）
     const response = NextResponse.redirect(new URL('/', appOrigin));
-
-    const cookieValue = JSON.stringify(minimalSession);
-    console.log('[Auth] Setting cookie with value length:', cookieValue.length);
-
-    response.cookies.set('session', cookieValue, {
+    response.cookies.set('session', JSON.stringify(minimalSession), {
       httpOnly: true,
       secure: isProduction,
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/',
     });
-
-    console.log('[Auth] Session set! Redirecting to home page.');
 
     return response;
   } catch (error) {
