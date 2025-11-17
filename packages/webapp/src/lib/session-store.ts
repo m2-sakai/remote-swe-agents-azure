@@ -2,7 +2,7 @@
  * Server-side session storage using Cosmos DB
  * Cookieサイズ制限回避のため、セッションIDのみをCookieに保存し、
  * 実際のトークン情報はCosmos DBに保存
- * 
+ *
  * 既存のsessions.tsと同じパーティションキー設計を使用:
  * PK = 'auth-sessions', SK = sessionId
  */
@@ -36,7 +36,9 @@ export function generateSessionId(): string {
  * セッションを保存
  * 既存sessions.tsのパターンに従う: container.item(id, PK).upsert()
  */
-export async function saveSession(sessionData: Omit<AuthSessionData, 'id' | 'PK' | 'sessionId' | 'createdAt' | 'updatedAt' | 'ttl'>): Promise<string> {
+export async function saveSession(
+  sessionData: Omit<AuthSessionData, 'id' | 'PK' | 'sessionId' | 'createdAt' | 'updatedAt' | 'ttl'>
+): Promise<string> {
   const sessionId = generateSessionId();
   const now = Date.now();
 
@@ -70,7 +72,7 @@ export async function getSession(sessionId: string): Promise<AuthSessionData | n
   try {
     const container = getContainer(CONTAINER_NAME);
     const { resource } = await container.item(sessionId, PK).read<AuthSessionData>();
-    
+
     if (!resource) {
       return null;
     }
@@ -97,10 +99,13 @@ export async function getSession(sessionId: string): Promise<AuthSessionData | n
  * セッションを更新
  * 既存sessions.tsのupdateSessionパターンに従う
  */
-export async function updateSession(sessionId: string, updates: Partial<Omit<AuthSessionData, 'id' | 'PK' | 'sessionId' | 'createdAt'>>): Promise<void> {
+export async function updateSession(
+  sessionId: string,
+  updates: Partial<Omit<AuthSessionData, 'id' | 'PK' | 'sessionId' | 'createdAt'>>
+): Promise<void> {
   try {
     const container = getContainer(CONTAINER_NAME);
-    
+
     // Get existing item
     const { resource: existing } = await container.item(sessionId, PK).read<AuthSessionData>();
 
