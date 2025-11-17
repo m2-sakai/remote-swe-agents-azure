@@ -25,11 +25,11 @@ export async function GET(request: NextRequest) {
     // 認証コードからトークンを取得
     const tokenResponse = await acquireTokenByCode(code);
 
-    // セッション情報を作成
-    const session = {
-      accessToken: tokenResponse.accessToken,
-      idToken: tokenResponse.idToken,
-      account: tokenResponse.account,
+    // 必要最小限の情報のみをCookieに保存（Cookieサイズを削減）
+    const minimalSession = {
+      userId: tokenResponse.account?.localAccountId || tokenResponse.account?.homeAccountId,
+      username: tokenResponse.account?.username,
+      name: tokenResponse.account?.name,
       expiresOn: tokenResponse.account?.idTokenClaims?.exp || Math.floor(Date.now() / 1000) + 3600,
     };
 
@@ -37,26 +37,20 @@ export async function GET(request: NextRequest) {
     const isProduction = process.env.NODE_ENV === 'production' || appOrigin.startsWith('https://');
 
     console.log('[Auth] Session saved:', {
-      hasAccessToken: !!session.accessToken,
-      hasAccount: !!session.account,
-      expiresOn: session.expiresOn,
-      expiresInMinutes: session.expiresOn ? Math.floor((session.expiresOn - Date.now() / 1000) / 60) : 'N/A',
+      userId: !!minimalSession.userId,
+      username: minimalSession.username,
+      expiresOn: minimalSession.expiresOn,
+      expiresInMinutes: minimalSession.expiresOn
+        ? Math.floor((minimalSession.expiresOn - Date.now() / 1000) / 60)
+        : 'N/A',
       isProduction,
     });
 
     // ホームページにリダイレクト（Cookieをレスポンスに設定）
     const response = NextResponse.redirect(new URL('/', appOrigin));
 
-    const cookieValue = JSON.stringify(session);
+    const cookieValue = JSON.stringify(minimalSession);
     console.log('[Auth] Setting cookie with value length:', cookieValue.length);
-    console.log('[Auth] Cookie settings:', {
-      name: 'session',
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7,
-      path: '/',
-    });
 
     response.cookies.set('session', cookieValue, {
       httpOnly: true,
@@ -66,9 +60,6 @@ export async function GET(request: NextRequest) {
       path: '/',
     });
 
-    // Cookieが正しく設定されたか確認
-    const setCookieHeader = response.headers.get('set-cookie');
-    console.log('[Auth] Set-Cookie header:', setCookieHeader);
     console.log('[Auth] Session set! Redirecting to home page.');
 
     return response;

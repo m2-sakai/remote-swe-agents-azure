@@ -35,18 +35,17 @@ export async function middleware(request: NextRequest) {
     const timeRemaining = expiresOn - now;
 
     console.log('[Middleware] Session check:', {
-      hasAccessToken: !!session?.accessToken,
-      hasAccount: !!session?.account,
+      userId: session?.userId,
+      username: session?.username,
       expiresOn,
       now,
       timeRemainingMinutes: Math.floor(timeRemaining / 60),
       isExpired: timeRemaining < 300,
     });
 
-    // アクセストークンとアカウント情報が存在するか確認
+    // ユーザーIDと有効期限をチェック
     const authenticated =
-      session?.accessToken &&
-      session?.account &&
+      session?.userId &&
       session?.expiresOn &&
       // トークンの有効期限をチェック（5分のバッファ）
       timeRemaining > 300;
