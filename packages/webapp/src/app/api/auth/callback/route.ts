@@ -3,7 +3,7 @@
  * 認証後のリダイレクト先
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { acquireTokenByCode, setSession } from '@/lib/azure-auth';
+import { acquireTokenByCode } from '@/lib/azure-auth';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -45,6 +45,7 @@ export async function GET(request: NextRequest) {
     });
 
     // ホームページにリダイレクト（Cookieをレスポンスに設定）
+    console.log('[Auth] Session set! Redirecting to home page.');
     const response = NextResponse.redirect(new URL('/', appOrigin));
     response.cookies.set('session', JSON.stringify(session), {
       httpOnly: true,

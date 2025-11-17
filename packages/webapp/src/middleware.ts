@@ -20,6 +20,7 @@ export async function middleware(request: NextRequest) {
 
   try {
     // セッションCookieをチェック
+    console.log('[Middleware] request.cookies', request.cookies);
     const sessionCookie = request.cookies.get('session');
 
     if (!sessionCookie?.value) {
