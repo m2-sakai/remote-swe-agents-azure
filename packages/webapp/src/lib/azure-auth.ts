@@ -5,6 +5,7 @@
 import { ConfidentialClientApplication, CryptoProvider } from '@azure/msal-node';
 import { cookies } from 'next/headers';
 import { msalConfig, loginRequest } from './msal-config';
+import * as sessionStore from './session-store';
 
 // MSAL クライアントインスタンス
 const msalInstance = new ConfidentialClientApplication(msalConfig);
@@ -55,16 +56,18 @@ export async function acquireTokenByCode(code: string): Promise<{
  */
 export async function getSession() {
   const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get('session');
+  const sessionIdCookie = cookieStore.get('session_id');
 
-  if (!sessionCookie?.value) {
+  if (!sessionIdCookie?.value) {
     return null;
   }
 
   try {
-    const session = JSON.parse(sessionCookie.value);
+    // Cosmos DBからセッションデータを取得
+    const session = await sessionStore.getSession(sessionIdCookie.value);
     return session;
-  } catch {
+  } catch (error) {
+    console.error('[Auth] Failed to get session:', error);
     return null;
   }
 }
@@ -72,13 +75,22 @@ export async function getSession() {
 /**
  * セッションを保存
  */
-export async function setSession(session: any) {
+export async function setSession(sessionData: {
+  accessToken: string;
+  idToken: string;
+  account: any;
+  expiresOn: number;
+}) {
   const cookieStore = await cookies();
+
+  // Cosmos DBにセッションデータを保存
+  const sessionId = await sessionStore.saveSession(sessionData);
 
   // HTTPSかどうかを判定（本番環境では必ずHTTPS）
   const isProduction = process.env.NODE_ENV === 'production' || process.env.APP_ORIGIN?.startsWith('https://');
 
-  cookieStore.set('session', JSON.stringify(session), {
+  // Cookieには軽量なセッションIDのみを保存
+  cookieStore.set('session_id', sessionId, {
     httpOnly: true,
     secure: isProduction,
     sameSite: 'lax',
@@ -87,10 +99,11 @@ export async function setSession(session: any) {
   });
 
   console.log('[Auth] Session saved:', {
-    hasAccessToken: !!session.accessToken,
-    hasAccount: !!session.account,
-    expiresOn: session.expiresOn,
-    expiresInMinutes: session.expiresOn ? Math.floor((session.expiresOn - Date.now() / 1000) / 60) : 'N/A',
+    sessionId,
+    hasAccessToken: !!sessionData.accessToken,
+    hasAccount: !!sessionData.account,
+    expiresOn: sessionData.expiresOn,
+    expiresInMinutes: sessionData.expiresOn ? Math.floor((sessionData.expiresOn - Date.now() / 1000) / 60) : 'N/A',
     isProduction,
   });
 }
@@ -100,7 +113,14 @@ export async function setSession(session: any) {
  */
 export async function clearSession() {
   const cookieStore = await cookies();
-  cookieStore.delete('session');
+  const sessionIdCookie = cookieStore.get('session_id');
+
+  if (sessionIdCookie?.value) {
+    // Cosmos DBからセッションを削除
+    await sessionStore.deleteSession(sessionIdCookie.value);
+  }
+
+  cookieStore.delete('session_id');
 }
 
 /**

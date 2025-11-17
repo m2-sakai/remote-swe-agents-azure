@@ -3,7 +3,7 @@
  * 認証後のリダイレクト先
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { acquireTokenByCode } from '@/lib/azure-auth';
+import { acquireTokenByCode, setSession } from '@/lib/azure-auth';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -25,26 +25,30 @@ export async function GET(request: NextRequest) {
     // 認証コードからトークンを取得
     const tokenResponse = await acquireTokenByCode(code);
 
-    // 必要最小限の情報のみをCookieに保存（Cookieサイズを削減）
-    const minimalSession = {
-      userId: tokenResponse.account?.localAccountId || tokenResponse.account?.homeAccountId,
-      username: tokenResponse.account?.username,
-      name: tokenResponse.account?.name,
+    // セッションデータを構築
+    const sessionData = {
+      accessToken: tokenResponse.accessToken,
+      idToken: tokenResponse.idToken,
+      account: tokenResponse.account,
       expiresOn: tokenResponse.account?.idTokenClaims?.exp || Math.floor(Date.now() / 1000) + 3600,
     };
+
+    console.log('[Callback] Session data created:', {
+      hasAccessToken: !!sessionData.accessToken,
+      hasAccount: !!sessionData.account,
+      userId: tokenResponse.account?.localAccountId || tokenResponse.account?.homeAccountId,
+      username: tokenResponse.account?.username,
+      expiresOn: sessionData.expiresOn,
+    });
+
+    // セッションを保存（Cosmos DB + Cookie）
+    await setSession(sessionData);
 
     // HTTPSかどうかを判定（本番環境では必ずHTTPS）
     const isProduction = process.env.NODE_ENV === 'production' || appOrigin.startsWith('https://');
 
-    // ホームページにリダイレクト（Cookieをレスポンスに設定）
+    // ホームページにリダイレクト
     const response = NextResponse.redirect(new URL('/', appOrigin));
-    response.cookies.set('session', JSON.stringify(minimalSession), {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: '/',
-    });
 
     return response;
   } catch (error) {

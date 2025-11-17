@@ -18,31 +18,16 @@ export async function middleware(request: NextRequest) {
   const appOrigin = process.env.APP_ORIGIN || process.env.NEXT_PUBLIC_APP_ORIGIN || 'http://localhost:3011';
 
   try {
-    // セッションCookieをチェック
-    const sessionCookie = request.cookies.get('session');
+    // セッションIDのCookieをチェック
+    const sessionIdCookie = request.cookies.get('session_id');
 
-    if (!sessionCookie?.value) {
+    if (!sessionIdCookie?.value) {
       return NextResponse.redirect(new URL('/sign-in', appOrigin));
     }
 
-    // セッション情報をパース
-    const session = JSON.parse(sessionCookie.value);
-    const now = Math.floor(Date.now() / 1000);
-    const expiresOn = session?.expiresOn || 0;
-    const timeRemaining = expiresOn - now;
-
-    // ユーザーIDと有効期限をチェック
-    const authenticated =
-      session?.userId &&
-      session?.expiresOn &&
-      // トークンの有効期限をチェック（5分のバッファ）
-      timeRemaining > 300;
-
-    if (authenticated) {
-      return response;
-    }
-
-    return NextResponse.redirect(new URL('/sign-in', appOrigin));
+    // セッションIDがあれば認証済みと判断
+    // 詳細な有効期限チェックはgetSession()で行う
+    return response;
   } catch (error) {
     return NextResponse.redirect(new URL('/sign-in', appOrigin));
   }
