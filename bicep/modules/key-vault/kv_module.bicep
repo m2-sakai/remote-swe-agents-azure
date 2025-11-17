@@ -34,10 +34,10 @@ resource keyVault 'Microsoft.KeyVault/vaults@2025-05-01' = {
     enabledForDeployment: true
     enabledForDiskEncryption: false
     enabledForTemplateDeployment: false
-    enableSoftDelete: false //true
+    enableSoftDelete: true
     softDeleteRetentionInDays: 90
     enableRbacAuthorization: true
-    enablePurgeProtection: false //true
+    enablePurgeProtection: true
     publicNetworkAccess: publicNetworkAccess
     tenantId: tenant().tenantId
     networkAcls: {

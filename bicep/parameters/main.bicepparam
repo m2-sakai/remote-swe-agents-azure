@@ -142,7 +142,7 @@ param containerRegistryName = 'm2sakaijeacr01'
 param skuName = 'Basic'
 
 // Key Vault
-param keyVaultName = 'm2-sakai-je-KV-01'
+param keyVaultName = 'm2-sakai-je-KV-99'
 param kvPrivateEndpointName = 'm2-sakai-je-PEP-KV-01'
 param kvPrivateLinkServiceGroupIds = [
   'vault'
@@ -168,7 +168,7 @@ param aplAppSettings = [
   }
   {
     name: 'AZURE_AD_CLIENT_SECRET'
-    value: '@Microsoft.KeyVault(VaultName=m2-sakai-je-KV-01;SecretName=AzureAdClientSecret)'
+    value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=AzureAdClientSecret)'
   }
   {
     name: 'AZURE_AD_REDIRECT_URI'
@@ -177,14 +177,6 @@ param aplAppSettings = [
   {
     name: 'AZURE_AD_TENANT_ID'
     value: 'fd35dd5c-69a6-4265-96e7-8702fe2bcb07'
-  }
-  {
-    name: 'DEV_USER_ID'
-    value: 'dev-user-001'
-  }
-  {
-    name: 'DEV_USER_EMAIL'
-    value: 'dev@example.com'
   }
   {
     name: 'APP_ORIGIN'
