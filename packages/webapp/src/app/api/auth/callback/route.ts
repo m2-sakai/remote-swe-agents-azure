@@ -45,15 +45,31 @@ export async function GET(request: NextRequest) {
     });
 
     // ホームページにリダイレクト（Cookieをレスポンスに設定）
-    console.log('[Auth] Session set! Redirecting to home page.');
     const response = NextResponse.redirect(new URL('/', appOrigin));
-    response.cookies.set('session', JSON.stringify(session), {
+
+    const cookieValue = JSON.stringify(session);
+    console.log('[Auth] Setting cookie with value length:', cookieValue.length);
+    console.log('[Auth] Cookie settings:', {
+      name: 'session',
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7,
+      path: '/',
+    });
+
+    response.cookies.set('session', cookieValue, {
       httpOnly: true,
       secure: isProduction,
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/',
     });
+
+    // Cookieが正しく設定されたか確認
+    const setCookieHeader = response.headers.get('set-cookie');
+    console.log('[Auth] Set-Cookie header:', setCookieHeader);
+    console.log('[Auth] Session set! Redirecting to home page.');
 
     return response;
   } catch (error) {
