@@ -29,7 +29,7 @@ export async function getSession() {
   const session = await getMsalSession();
 
   if (!session || !session.account) {
-    throw new Error('session not found');
+    throw new Error('[getSession] session not found');
   }
 
   const userId = getUserId(session);

@@ -135,7 +135,7 @@ export const updateSession = async (workerId: string, params: UpdateSessionParam
   const { resource: existing } = await container.item(workerId, PK).read<SessionItem>();
 
   if (!existing) {
-    throw new Error(`Session not found: ${workerId}`);
+    throw new Error(`[updateSession] Session not found: ${workerId}`);
   }
 
   // Merge updates

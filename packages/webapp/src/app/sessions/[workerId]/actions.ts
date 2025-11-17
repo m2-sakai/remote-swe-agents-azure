@@ -18,7 +18,7 @@ export const sendMessageToAgent = authActionClient
     const { workerId, message, imageKeys = [], modelOverride } = parsedInput;
     const session = await getSession(workerId);
     if (!session) {
-      throw new Error('Session not found');
+      throw new Error('[sendMessageToAgent] Session not found');
     }
 
     const content = [];

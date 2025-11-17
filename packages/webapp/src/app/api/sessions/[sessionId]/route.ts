@@ -49,7 +49,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   const session = await getSession(sessionId);
 
   if (!session) {
-    return NextResponse.json({ error: 'Session not found' }, { status: 404 });
+    return NextResponse.json({ error: 'Session not found..' }, { status: 404 });
   }
 
   // Create content for the message
@@ -92,7 +92,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   const session = await getSession(sessionId);
 
   if (!session) {
-    return NextResponse.json({ error: 'Session not found' }, { status: 404 });
+    return NextResponse.json({ error: 'Session not found...' }, { status: 404 });
   }
 
   // Get conversation history
