@@ -145,7 +145,7 @@ param skuName = 'Basic'
 param appServicePlanName = 'm2-sakai-je-ASP-01'
 param appServicePlanSkuName = 'P0V3'
 param appServiceName = 'm2-sakai-je-APP-01'
-param runtimeStack = 'NODE|22-lts'
+param runtimeStack = 'DOCKER|${containerRegistryName}.azurecr.io/remote-swe-agent-azure-webapp:latest'
 param vnetIntegrationSubnetName = 'Outbound-sub-0_0'
 param aplAppSettings = [
   {

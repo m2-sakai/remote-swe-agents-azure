@@ -15,7 +15,7 @@ param appServiceName string
 param appServicePlanName string
 
 @description('リソースの種類')
-param kind string = 'app,linux'
+param kind string = 'app,linux,container'
 
 @description('ユーザー割り当てマネージドIDの名前')
 param userAssignedIdentityName string
@@ -116,6 +116,7 @@ resource appService 'Microsoft.Web/sites@2024-11-01' = {
         infraAppSettings
       )
       acrUseManagedIdentityCreds: true
+      acrUserManagedIdentityID: existingUserAssignedIdentity.properties.clientId
       alwaysOn: false
       http20Enabled: true
       functionAppScaleLimit: 0

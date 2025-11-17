@@ -14,9 +14,6 @@ param containerRegistryName string
 @description('コンテナーレジストリのSKU名')
 param skuName string
 
-@description('IPアドレスのACL規則')
-param ipRules array = []
-
 @description('パブリックアクセスの有効化')
 @allowed([
   'Enabled'
