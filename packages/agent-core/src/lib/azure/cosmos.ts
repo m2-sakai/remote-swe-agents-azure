@@ -16,6 +16,13 @@ function initializeClient() {
     const databaseId = process.env.AZURE_COSMOS_DATABASE_ID || 'remote-swe-agents';
     const connectionString = process.env.AZURE_COSMOS_CONNECTION_STRING;
 
+    console.log('[Cosmos] Initializing client:', {
+      hasEndpoint: !!endpoint,
+      hasConnectionString: !!connectionString,
+      databaseId,
+      endpoint: endpoint ? endpoint.substring(0, 30) + '...' : 'N/A',
+    });
+
     if (connectionString) {
       // 接続文字列が提供されている場合（開発環境）
       cosmosClient = new CosmosClient(connectionString);
@@ -28,6 +35,7 @@ function initializeClient() {
     }
 
     database = cosmosClient.database(databaseId);
+    console.log('[Cosmos] Database initialized:', databaseId);
   }
   return { cosmosClient, database };
 }
@@ -40,6 +48,7 @@ export function getContainer(containerName: string): Container {
   if (!database) {
     throw new Error('Database not initialized');
   }
+  console.log('[Cosmos] Getting container:', containerName);
   return database.container(containerName);
 }
 
