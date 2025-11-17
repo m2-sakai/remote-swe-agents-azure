@@ -16,12 +16,14 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
+  const appOrigin = process.env.APP_ORIGIN || process.env.NEXT_PUBLIC_APP_ORIGIN || 'http://localhost:3011';
+
   try {
     // セッションCookieをチェック
     const sessionCookie = request.cookies.get('session');
 
     if (!sessionCookie?.value) {
-      return NextResponse.redirect(new URL('/sign-in', request.url));
+      return NextResponse.redirect(new URL('/sign-in', appOrigin));
     }
 
     // セッション情報をパース
@@ -39,10 +41,10 @@ export async function middleware(request: NextRequest) {
       return response;
     }
 
-    return NextResponse.redirect(new URL('/sign-in', request.url));
+    return NextResponse.redirect(new URL('/sign-in', appOrigin));
   } catch (error) {
     console.log('Middleware authentication error:', error);
-    return NextResponse.redirect(new URL('/sign-in', request.url));
+    return NextResponse.redirect(new URL('/sign-in', appOrigin));
   }
 }
 

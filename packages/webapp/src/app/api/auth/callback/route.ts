@@ -9,15 +9,16 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const code = searchParams.get('code');
   const error = searchParams.get('error');
+  const appOrigin = process.env.APP_ORIGIN || process.env.NEXT_PUBLIC_APP_ORIGIN || 'http://localhost:3011';
 
   // エラーハンドリング
   if (error) {
     console.error('Authentication error:', error);
-    return NextResponse.redirect(new URL('/sign-in?error=auth_failed', request.url));
+    return NextResponse.redirect(new URL('/sign-in?error=auth_failed', appOrigin));
   }
 
   if (!code) {
-    return NextResponse.redirect(new URL('/sign-in?error=no_code', request.url));
+    return NextResponse.redirect(new URL('/sign-in?error=no_code', appOrigin));
   }
 
   try {
@@ -36,9 +37,9 @@ export async function GET(request: NextRequest) {
     await setSession(session);
 
     // ホームページにリダイレクト
-    return NextResponse.redirect(new URL('/', request.url));
+    return NextResponse.redirect(new URL('/', appOrigin));
   } catch (error) {
     console.error('Token acquisition error:', error);
-    return NextResponse.redirect(new URL('/sign-in?error=token_failed', request.url));
+    return NextResponse.redirect(new URL('/sign-in?error=token_failed', appOrigin));
   }
 }
