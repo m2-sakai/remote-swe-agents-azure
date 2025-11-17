@@ -33,11 +33,28 @@ export async function GET(request: NextRequest) {
       expiresOn: tokenResponse.account?.idTokenClaims?.exp || Math.floor(Date.now() / 1000) + 3600,
     };
 
-    // セッションをCookieに保存
-    await setSession(session);
+    // HTTPSかどうかを判定（本番環境では必ずHTTPS）
+    const isProduction = process.env.NODE_ENV === 'production' || appOrigin.startsWith('https://');
 
-    // ホームページにリダイレクト
-    return NextResponse.redirect(new URL('/', appOrigin));
+    console.log('[Auth] Session saved:', {
+      hasAccessToken: !!session.accessToken,
+      hasAccount: !!session.account,
+      expiresOn: session.expiresOn,
+      expiresInMinutes: session.expiresOn ? Math.floor((session.expiresOn - Date.now() / 1000) / 60) : 'N/A',
+      isProduction,
+    });
+
+    // ホームページにリダイレクト（Cookieをレスポンスに設定）
+    const response = NextResponse.redirect(new URL('/', appOrigin));
+    response.cookies.set('session', JSON.stringify(session), {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+      path: '/',
+    });
+
+    return response;
   } catch (error) {
     console.error('Token acquisition error:', error);
     return NextResponse.redirect(new URL('/sign-in?error=token_failed', appOrigin));
