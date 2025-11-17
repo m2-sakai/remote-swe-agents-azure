@@ -74,13 +74,24 @@ export async function getSession() {
  */
 export async function setSession(session: any) {
   const cookieStore = await cookies();
-  
+
+  // HTTPSかどうかを判定（本番環境では必ずHTTPS）
+  const isProduction = process.env.NODE_ENV === 'production' || process.env.APP_ORIGIN?.startsWith('https://');
+
   cookieStore.set('session', JSON.stringify(session), {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: isProduction,
     sameSite: 'lax',
     maxAge: 60 * 60 * 24 * 7, // 7 days
     path: '/',
+  });
+
+  console.log('[Auth] Session saved:', {
+    hasAccessToken: !!session.accessToken,
+    hasAccount: !!session.account,
+    expiresOn: session.expiresOn,
+    expiresInMinutes: session.expiresOn ? Math.floor((session.expiresOn - Date.now() / 1000) / 60) : 'N/A',
+    isProduction,
   });
 }
 
@@ -98,7 +109,7 @@ export async function clearSession() {
 export function getLogoutUrl(): string {
   const tenantId = process.env.AZURE_AD_TENANT_ID!;
   const postLogoutRedirectUri = process.env.APP_ORIGIN || 'http://localhost:3011';
-  
+
   return `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/logout?post_logout_redirect_uri=${encodeURIComponent(postLogoutRedirectUri)}`;
 }
 

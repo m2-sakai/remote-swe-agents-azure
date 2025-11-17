@@ -23,11 +23,24 @@ export async function middleware(request: NextRequest) {
     const sessionCookie = request.cookies.get('session');
 
     if (!sessionCookie?.value) {
+      console.log('[Middleware] No session cookie found, redirecting to sign-in');
       return NextResponse.redirect(new URL('/sign-in', appOrigin));
     }
 
     // セッション情報をパース
     const session = JSON.parse(sessionCookie.value);
+    const now = Math.floor(Date.now() / 1000);
+    const expiresOn = session?.expiresOn || 0;
+    const timeRemaining = expiresOn - now;
+
+    console.log('[Middleware] Session check:', {
+      hasAccessToken: !!session?.accessToken,
+      hasAccount: !!session?.account,
+      expiresOn,
+      now,
+      timeRemainingMinutes: Math.floor(timeRemaining / 60),
+      isExpired: timeRemaining < 300,
+    });
 
     // アクセストークンとアカウント情報が存在するか確認
     const authenticated =
@@ -35,15 +48,16 @@ export async function middleware(request: NextRequest) {
       session?.account &&
       session?.expiresOn &&
       // トークンの有効期限をチェック（5分のバッファ）
-      session.expiresOn > Math.floor(Date.now() / 1000) + 300;
+      timeRemaining > 300;
 
     if (authenticated) {
       return response;
     }
 
+    console.log('[Middleware] Authentication failed, redirecting to sign-in');
     return NextResponse.redirect(new URL('/sign-in', appOrigin));
   } catch (error) {
-    console.log('Middleware authentication error:', error);
+    console.log('[Middleware] Authentication error:', error);
     return NextResponse.redirect(new URL('/sign-in', appOrigin));
   }
 }
