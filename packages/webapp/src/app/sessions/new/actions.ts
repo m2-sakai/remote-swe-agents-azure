@@ -54,7 +54,7 @@ export const createNewWorker = authActionClient
         type: 'Put',
         item: {
           // Session record
-          id: `sessions#${workerId}`,
+          id: workerId, // Cosmos DB document ID (no special characters)
           PK: 'sessions',
           SK: workerId,
           workerId,
@@ -73,7 +73,7 @@ export const createNewWorker = authActionClient
       {
         type: 'Put',
         item: {
-          id: `message-${workerId}#${String(Date.now()).padStart(15, '0')}`,
+          id: `message-${workerId}-${String(Date.now()).padStart(15, '0')}`, // Remove # separator
           PK: `message-${workerId}`,
           SK: `${String(Date.now()).padStart(15, '0')}`,
           content: JSON.stringify(content),
