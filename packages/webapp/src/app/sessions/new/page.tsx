@@ -6,6 +6,7 @@ import NewSessionForm from './NewSessionForm';
 import { queryByPartitionKey, ContainerName } from '@remote-swe-agents-azure/agent-core/azure';
 import { PromptTemplate } from '@/app/sessions/new/schemas';
 import { getCustomAgents, getPreferences } from '@remote-swe-agents-azure/agent-core/lib';
+import { CustomAgent, GlobalPreferences } from '@remote-swe-agents-azure/agent-core/schema';
 
 // 動的レンダリングを強制（ビルド時にデータフェッチしない）
 export const dynamic = 'force-dynamic';
@@ -16,13 +17,38 @@ export default async function NewSessionPage() {
 
   // Fetch templates directly from Cosmos DB
   let templates: PromptTemplate[] = [];
-  const items = await queryByPartitionKey<PromptTemplate>(ContainerName, 'prompt-template');
+  try {
+    const items = await queryByPartitionKey<PromptTemplate>(ContainerName, 'prompt-template');
+    // Sort by createdAt in descending order
+    templates = items.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  } catch (error) {
+    console.error('[NewSessionPage] Failed to fetch templates:', error);
+    templates = [];
+  }
 
-  const preferences = await getPreferences();
-  const customAgents = await getCustomAgents();
+  let preferences: GlobalPreferences;
+  try {
+    preferences = await getPreferences();
+  } catch (error) {
+    console.error('[NewSessionPage] Failed to fetch preferences:', error);
+    // デフォルト値を設定
+    preferences = {
+      id: 'general',
+      PK: 'global-config',
+      SK: 'general',
+      modelOverride: 'sonnet3.7',
+      enableLinkInPr: false,
+      updatedAt: 0,
+    };
+  }
 
-  // Sort by createdAt in descending order
-  templates = items.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  let customAgents: CustomAgent[] = [];
+  try {
+    customAgents = await getCustomAgents();
+  } catch (error) {
+    console.error('[NewSessionPage] Failed to fetch custom agents:', error);
+    customAgents = [];
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">

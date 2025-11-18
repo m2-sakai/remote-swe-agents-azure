@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { modelTypeSchema } from './model';
 
 export const globalPreferencesSchema = z.object({
+  id: z.string().default('general'),
   PK: z.literal('global-config'),
   SK: z.literal('general'),
   modelOverride: modelTypeSchema.default('sonnet3.7'),
