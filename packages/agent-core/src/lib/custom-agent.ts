@@ -15,11 +15,12 @@ const validateMcpConfig = (mcpConfig: string): void => {
 };
 
 export const getCustomAgent = async (customAgentId: string | undefined): Promise<CustomAgent | undefined> => {
-  if (!customAgentId) return undefined;
+  if (!customAgentId || customAgentId === 'DEFAULT') return undefined;
 
   const container = getContainer(CONTAINER_NAME);
   const PK = 'custom-agent';
-  const id = `${PK}#${customAgentId}`;
+  const SK = customAgentId; // customAgentId is the SK value
+  const id = `custom-agent-${SK}`; // Use hyphen instead of #
 
   try {
     const { resource: item } = await container.item(id, PK).read();
@@ -62,7 +63,7 @@ export const createCustomAgent = async (
   const now = Date.now();
   const SK = `${randomBytes(6).toString('base64url')}`;
   const PK = 'custom-agent';
-  const id = `${PK}#${SK}`;
+  const id = `custom-agent-${SK}`; // Use hyphen instead of #
 
   const customAgent: CustomAgent = {
     ...agent,
@@ -91,7 +92,7 @@ export const updateCustomAgent = async (
   const now = Date.now();
   const container = getContainer(CONTAINER_NAME);
   const PK = 'custom-agent';
-  const id = `${PK}#${sk}`;
+  const id = `custom-agent-${sk}`; // Use hyphen instead of #
 
   const { resource: existingAgent } = await container.item(id, PK).read();
 
@@ -116,7 +117,7 @@ export const updateCustomAgent = async (
 export const deleteCustomAgent = async (sk: string): Promise<void> => {
   const container = getContainer(CONTAINER_NAME);
   const PK = 'custom-agent';
-  const id = `${PK}#${sk}`;
+  const id = `custom-agent-${sk}`; // Use hyphen instead of #
 
   await container.item(id, PK).delete();
 };
