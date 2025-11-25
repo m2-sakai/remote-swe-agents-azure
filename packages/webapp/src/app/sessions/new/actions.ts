@@ -30,7 +30,8 @@ export const createNewWorker = authActionClient
     const agent = await getCustomAgent(customAgentId);
     console.log('[createNewWorker] Custom agent:', agent ? `Found: ${agent.name}` : 'Not found, using default');
 
-    const runtimeType = agent?.runtimeType ?? 'ec2';
+    // TODO: Change to 'ec2' after VM setup is complete
+    const runtimeType = agent?.runtimeType ?? 'agent-core'; // Use agent-core as default for development
     console.log('[createNewWorker] Runtime type:', runtimeType);
 
     if (runtimeType == 'agent-core') {
