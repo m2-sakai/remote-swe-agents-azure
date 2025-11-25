@@ -48,40 +48,47 @@ export const createNewWorker = authActionClient
       }
     }
 
+    const sessionItem = {
+      // Session record
+      id: workerId, // Cosmos DB document ID (no special characters)
+      PK: 'sessions',
+      SK: workerId,
+      workerId,
+      initialMessage: message,
+      createdAt: now,
+      updatedAt: now,
+      LSI1: String(now).padStart(15, '0'),
+      instanceStatus: 'starting',
+      sessionCost: 0,
+      agentStatus: 'pending',
+      initiator: `webapp-${userId}`, // Remove # separator
+      customAgentId: agent?.SK || undefined,
+      runtimeType,
+    } satisfies SessionItem;
+
+    const messageItem = {
+      id: `message-${workerId}-${String(Date.now()).padStart(15, '0')}`, // Remove # separator
+      PK: `message-${workerId}`,
+      SK: `${String(Date.now()).padStart(15, '0')}`,
+      content: JSON.stringify(content),
+      role: 'user',
+      tokenCount: 0,
+      messageType: 'userMessage',
+      modelOverride,
+    } satisfies MessageItem;
+
+    console.log('[createNewWorker] Session item:', JSON.stringify(sessionItem, null, 2));
+    console.log('[createNewWorker] Message item:', JSON.stringify(messageItem, null, 2));
+
     // Create session and initial message in a single transaction
     await transactWrite(ContainerName, [
       {
         type: 'Put',
-        item: {
-          // Session record
-          id: workerId, // Cosmos DB document ID (no special characters)
-          PK: 'sessions',
-          SK: workerId,
-          workerId,
-          initialMessage: message,
-          createdAt: now,
-          updatedAt: now,
-          LSI1: String(now).padStart(15, '0'),
-          instanceStatus: 'starting',
-          sessionCost: 0,
-          agentStatus: 'pending',
-          initiator: `webapp-${userId}`, // Remove # separator
-          customAgentId: agent?.SK,
-          runtimeType,
-        } satisfies SessionItem,
+        item: sessionItem,
       },
       {
         type: 'Put',
-        item: {
-          id: `message-${workerId}-${String(Date.now()).padStart(15, '0')}`, // Remove # separator
-          PK: `message-${workerId}`,
-          SK: `${String(Date.now()).padStart(15, '0')}`,
-          content: JSON.stringify(content),
-          role: 'user',
-          tokenCount: 0,
-          messageType: 'userMessage',
-          modelOverride,
-        } satisfies MessageItem,
+        item: messageItem,
       },
     ]);
 
