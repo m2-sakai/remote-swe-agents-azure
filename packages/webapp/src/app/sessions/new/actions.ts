@@ -65,7 +65,7 @@ export const createNewWorker = authActionClient
           instanceStatus: 'starting',
           sessionCost: 0,
           agentStatus: 'pending',
-          initiator: `webapp#${userId}`,
+          initiator: `webapp-${userId}`, // Remove # separator
           customAgentId: agent?.SK,
           runtimeType,
         } satisfies SessionItem,
