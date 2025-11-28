@@ -24,6 +24,10 @@ param delegations array = []
 @maxLength(80)
 param networkSecurityGroupName string = 'null'
 
+@description('Private Link Service Network Policies')
+@allowed(['Enabled', 'Disabled'])
+param privateLinkServiceNetworkPolicies string = 'Enabled'
+
 resource existingVirtualNetwork 'Microsoft.Network/virtualNetworks@2024-10-01' existing = {
   name: virtualNetworkName
 }
@@ -44,7 +48,7 @@ resource subnet 'Microsoft.Network/virtualNetworks/subnets@2024-10-01' = {
     serviceEndpoints: serviceEndpoints
     delegations: delegations
     privateEndpointNetworkPolicies: 'Enabled'
-    privateLinkServiceNetworkPolicies: 'Enabled'
+    privateLinkServiceNetworkPolicies: privateLinkServiceNetworkPolicies
   }
 }
 
