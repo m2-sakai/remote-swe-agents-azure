@@ -117,6 +117,10 @@ resource appService 'Microsoft.Web/sites@2024-11-01' = {
             value: existingUserAssignedIdentity.properties.clientId
           }
           {
+            name: 'AZURE_RESOURCE_GROUP_NAME'
+            value: resourceGroup().name
+          }
+          {
             name: 'XDT_MicrosoftApplicationInsights_Mode'
             value: 'Recommended'
           }

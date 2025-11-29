@@ -1,5 +1,8 @@
 using '../templates/main.bicep'
 
+var subscriptionId = 'd13f1cb9-3e28-43db-9497-380b6524aac5'
+var resourceGroupName = 'm2-sakai-je-RG-01'
+
 // 共通
 param tag = {
   owner: 'm2-sakai'
@@ -148,7 +151,7 @@ param containerRegistryName = 'm2sakaijeacr01'
 param skuName = 'Basic'
 
 // Key Vault
-param keyVaultName = 'm2-sakai-je-KV-99'
+param keyVaultName = 'm2-sakai-je-KV-98'
 param kvPrivateEndpointName = 'm2-sakai-je-PEP-KV-01'
 param kvPrivateLinkServiceGroupIds = [
   'vault'
@@ -164,10 +167,6 @@ param appServiceName = 'm2-sakai-je-APP-01'
 param runtimeStack = 'DOCKER|${containerRegistryName}.azurecr.io/remote-swe-agent-azure-webapp:latest'
 param vnetIntegrationSubnetName = 'Outbound-sub-0_0'
 param aplAppSettings = [
-  {
-    name: 'SKIP_AUTH'
-    value: 'false'
-  }
   {
     name: 'AZURE_AD_CLIENT_ID'
     value: '40d43ebb-7e58-4460-ae5f-d29a27f1e8eb'
@@ -185,12 +184,60 @@ param aplAppSettings = [
     value: 'fd35dd5c-69a6-4265-96e7-8702fe2bcb07'
   }
   {
+    name: 'AZURE_COSMOS_CONTAINER_NAME'
+    value: 'remote-swe-agents'
+  }
+  {
+    name: 'AZURE_COSMOS_DATABASE_ID'
+    value: 'remote-swe-agents'
+  }
+  {
+    name: 'AZURE_COSMOS_ENDPOINT'
+    value: 'https://${cosmosDbName}.documents.azure.com/'
+  }
+  {
+    name: 'AZURE_VM_SUBNET_ID'
+    value: '/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Network/virtualNetworks/${virtualNetworkName}/subnets/Vm-sub-6_0'
+  }
+  {
+    name: 'AZURE_SUBSCRIPTION_ID'
+    value: subscriptionId
+  }
+  {
     name: 'APP_ORIGIN'
+    value: 'https://${appServiceName}.azurewebsites.net'
+  }
+  {
+    name: 'DEV_USER_EMAIL'
+    value: 'test@example.com'
+  }
+  {
+    name: 'DEV_USER_ID'
+    value: 'test-user-001'
+  }
+  {
+    name: 'DOCKER_REGISTRY_SERVER_URL'
+    value: '${containerRegistryName}.azurecr.io'
+  }
+  {
+    name: 'DOCKER_REGISTRY_SERVER_USERNAME'
+    value: containerRegistryName
+  }
+  {
+    name: 'DOCKER_REGISTRY_SERVER_PASSWORD'
+    value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=AcrAdminPassword)'
+  }
+  {
+    name: 'NEXT_PUBLIC_APP_ORIGIN'
     value: 'https://${appServiceName}.azurewebsites.net'
   }
   {
     name: 'PORT'
     value: '3000'
+  }
+  {
+    name: 'SKIP_AUTH'
+    value: 'false'
   }
 ]
 

@@ -8,7 +8,7 @@ param userAssignedIdentityName string
 @description('マネージドIDに付与するロールID')
 param roleDefinitionId string = 'b24988ac-6180-42a0-ab88-20f7382dd24c'
 
-var roleAssignmentName = guid(userAssignedIdentityName,roleDefinitionId, resourceGroup().id)
+var roleAssignmentName = guid(resourceGroup().id, roleDefinitionId, existingUserAssignedIdentity.id)
 
 resource existingUserAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' existing = {
   name: userAssignedIdentityName

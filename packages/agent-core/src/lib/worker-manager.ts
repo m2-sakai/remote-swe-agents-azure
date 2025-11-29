@@ -10,7 +10,7 @@ const subscriptionId = process.env.AZURE_SUBSCRIPTION_ID || '';
 const resourceGroupName = process.env.AZURE_RESOURCE_GROUP_NAME || '';
 const vmImageId = process.env.AZURE_VM_IMAGE_ID || ''; // Managed Image or Azure Compute Gallery Image ID
 const vmSize = process.env.AZURE_VM_SIZE || 'Standard_D2s_v3';
-const subnetId = process.env.AZURE_SUBNET_ID || '';
+const subnetId = process.env.AZURE_VM_SUBNET_ID || '';
 
 let computeClient: ComputeManagementClient | null = null;
 let networkClient: NetworkManagementClient | null = null;
