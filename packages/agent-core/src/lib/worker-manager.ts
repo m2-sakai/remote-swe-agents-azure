@@ -130,6 +130,19 @@ async function createVMInstance(workerId: string): Promise<{ instanceId: string 
       nicParams as any
     );
 
+    // Create cloud-init script to start the service
+    const storageAccountName = process.env.AZURE_STORAGE_ACCOUNT_NAME || '';
+    const cloudInitScript = `#cloud-config
+write_files:
+  - path: /etc/systemd/system/myapp.service.d/override.conf
+    content: |
+      [Service]
+      Environment="AZURE_STORAGE_ACCOUNT_NAME=${storageAccountName}"
+runcmd:
+  - systemctl daemon-reload
+  - systemctl start myapp.service
+`;
+
     // Create VM
     const vmParams = {
       location: process.env.AZURE_LOCATION || 'eastus',
@@ -150,6 +163,7 @@ async function createVMInstance(workerId: string): Promise<{ instanceId: string 
       osProfile: {
         computerName: vmName,
         adminUsername: process.env.AZURE_VM_ADMIN_USERNAME || 'azureuser',
+        customData: Buffer.from(cloudInitScript).toString('base64'),
         linuxConfiguration: {
           disablePasswordAuthentication: true,
           ssh: {

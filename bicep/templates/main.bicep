@@ -8,7 +8,8 @@ param tag object = {}
 
 // マネージドID
 @description('マネージドIDのリソース名')
-@minLength(1)
+@minLength(3)
+@maxLength(128)
 param userAssignedIdentityName string
 module managedIdentityModule '../modules/managed-identity/id_module.bicep' = {
   name: take(userAssignedIdentityName, 64)
@@ -16,6 +17,15 @@ module managedIdentityModule '../modules/managed-identity/id_module.bicep' = {
     tag: tag
     userAssignedIdentityName: userAssignedIdentityName
   }
+}
+module managedIdentityAddRoleModule '../modules/managed-identity/id_add-role_module.bicep' = {
+  name: '${take(userAssignedIdentityName, 40)}_AddRole'
+  params: {
+    userAssignedIdentityName: userAssignedIdentityName
+  }
+  dependsOn: [
+    managedIdentityModule
+  ]
 }
 
 // Log Analytics / Application Insights
@@ -91,6 +101,7 @@ module subnetModules '../modules/virtual-network/vnet_add-subnet_module.bicep' =
       networkSecurityGroupName: subnet.networkSecurityGroupName
       serviceEndpoints: subnet.serviceEndpoints
       delegations: subnet.delegations
+      privateLinkServiceNetworkPolicies: subnet.privateLinkServiceNetworkPolicies
     }
     dependsOn: [
       virtualNetworkModule
@@ -247,6 +258,59 @@ module appServiceVnetIntegrationModule '../modules/app-service/app_add-vnet-inte
   ]
 }
 
+// Storage Account
+@description('Storage Accountの名前')
+@minLength(3)
+@maxLength(24)
+param storageAccountName string
+@description('Storage Account用プライベートエンドポイントのリソース名')
+@minLength(2)
+@maxLength(64)
+param storageAccountPrivateEndpointName string
+@description('Storage Account用接続する必要があるリモートリソースから取得したグループのID')
+param storageAccountPrivateLinkServiceGroupIds array
+@description('Storage Account用仮想ネットワークのサブネット名')
+@minLength(1)
+@maxLength(80)
+param storageAccountPrivateEndpointSubnetName string
+@description('Storage Account用プライベートDNSゾーンの情報')
+param storageAccountPrivateDnsZoneName string
+module storageAccountModule '../modules/storage-account/st_module.bicep' = {
+  name: take(storageAccountName, 64)
+  params: {
+    tag: tag
+    storageAccountName: storageAccountName
+  }
+  dependsOn: []
+}
+module storageAccountPrivateEndpointModule '../modules/private-endpoint/pep_module.bicep' = {
+  name: take(storageAccountPrivateEndpointName, 64)
+  params: {
+    tag: tag
+    privateEndpointName: storageAccountPrivateEndpointName
+    privateLinkServiceId: storageAccountModule.outputs.storageAccountId
+    privateLinkServiceGroupIds: storageAccountPrivateLinkServiceGroupIds
+    virtualNetworkName: virtualNetworkName
+    subnetName: storageAccountPrivateEndpointSubnetName
+    privateDnsZoneName: storageAccountPrivateDnsZoneName
+  }
+  dependsOn: [
+    virtualNetworkModule
+    pdzModule
+  ]
+}
+module storageAccountAddRoleModule '../modules/storage-account/st_add-role_module.bicep' = {
+  name: '${take(storageAccountName, 40)}_AddRole'
+  params: {
+    storageAccountName: storageAccountName
+    userAssignedIdentityName: userAssignedIdentityName
+  }
+  dependsOn: [
+    storageAccountModule
+    managedIdentityModule
+  ]
+}
+
 // Cosmos DB
 @description('Cosmos DB のリソース名')
 @minLength(1)
@@ -295,5 +359,130 @@ module cosmosAddRoleModule '../modules/cosmos-db/cosmos_add-role_module.bicep' =
   dependsOn: [
     cosmosDbModule
     managedIdentityModule
+  ]
+}
+
+// Azure OpenAI
+@description('Azure OpenAI アカウントのリソース名')
+@minLength(2)
+@maxLength(64)
+param openAIAccountName string
+@description('Azure OpenAI用プライベートエンドポイントのリソース名')
+@minLength(2)
+@maxLength(64)
+param openAIPrivateEndpointName string
+@description('Azure OpenAI用接続する必要があるリモートリソースから取得したグループのID')
+param openAIPrivateLinkServiceGroupIds array
+@description('Azure OpenAI用仮想ネットワークのサブネット名')
+@minLength(1)
+@maxLength(80)
+param openAIPrivateEndpointSubnetName string
+@description('Azure OpenAI用プライベートDNSゾーンの情報')
+param openAIPrivateDnsZoneName string
+module openAIModule '../modules/cognitive-services/cs_module.bicep' = {
+  name: take(openAIAccountName, 64)
+  params: {
+    tag: tag
+    openAIAccountName: openAIAccountName
+  }
+  dependsOn: []
+}
+module openAIPrivateEndpointModule '../modules/private-endpoint/pep_module.bicep' = {
+  name: take(openAIPrivateEndpointName, 64)
+  params: {
+    tag: tag
+    privateEndpointName: openAIPrivateEndpointName
+    privateLinkServiceId: openAIModule.outputs.openAIAccountId
+    privateLinkServiceGroupIds: openAIPrivateLinkServiceGroupIds
+    virtualNetworkName: virtualNetworkName
+    subnetName: openAIPrivateEndpointSubnetName
+    privateDnsZoneName: openAIPrivateDnsZoneName
+  }
+  dependsOn: [
+    virtualNetworkModule
+    pdzModule
+  ]
+}
+module openAIDeploymentModule '../modules/cognitive-services/cs_add-deployment_module.bicep' = {
+  name: 'gpt-4o-deployment'
+  params: {
+    openAIAccountName: openAIAccountName
+    deploymentName: 'gpt-4o'
+  }
+  dependsOn: [
+    openAIModule
+  ]
+}
+module openAIAddRoleModule '../modules/cognitive-services/cs_add-role_module.bicep' = {
+  name: '${take(openAIAccountName, 40)}_AddRole'
+  params: {
+    openAIAccountName: openAIAccountName
+    userAssignedIdentityName: userAssignedIdentityName
+  }
+  dependsOn: [
+    openAIModule
+    managedIdentityModule
+  ]
+}
+
+// Gallery
+@description('Compute Gallery の名前')
+@minLength(1)
+param galleryName string
+@description('Compute Gallery の説明')
+param galleryDescription string
+@description('Image Definition の名前')
+@minLength(1)
+param imageDefinitionName string
+@description('Image Definition の説明')
+param imageDescription string = 'Worker VM with Node.js, Docker, and agent packages pre-installed'
+module galleryModule '../modules/compute-gallery/gal_module.bicep' = {
+  name: take(galleryName, 64)
+  params: {
+    galleryName: galleryName
+    galleryDescription: galleryDescription
+  }
+  dependsOn: []
+}
+module galleryAddImageDefinitionModule '../modules/compute-gallery/gal_add-image-definition_module.bicep' = {
+  name: take(imageDefinitionName, 64)
+  params: {
+    galleryName: galleryName
+    imageDefinitionName: imageDefinitionName
+    imageDescription: imageDescription
+  }
+  dependsOn: [
+    galleryModule
+  ]
+}
+
+// Image Builder
+@description('Image Template の名前')
+@minLength(1)
+param imageTemplateName string = 'worker-template'
+@description('Image Version')
+param imageVersion string = '1.0.0'
+@description('VM用サブネットの名前')
+param vmSubnetName string
+@description('セットアップスクリプト')
+param setupScript string
+
+module imageTemplateModule '../modules/image-builder/it_module.bicep' = {
+  name: take(imageTemplateName, 64)
+  params: {
+    location: location
+    tag: tag
+    imageTemplateName: imageTemplateName
+    userAssignedIdentityName: userAssignedIdentityName
+    setupScript: setupScript
+    galleryName: galleryName
+    imageDefinitionName: imageDefinitionName
+    imageVersion: imageVersion
+    virtualNetworkName: virtualNetworkName
+    subnetName: vmSubnetName
+  }
+  dependsOn: [
+    managedIdentityAddRoleModule
+    galleryAddImageDefinitionModule
   ]
 }

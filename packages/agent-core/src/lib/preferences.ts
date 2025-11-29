@@ -53,6 +53,9 @@ export const getPreferences = async (): Promise<GlobalPreferences> => {
         id: ITEM_ID,
         PK: PARTITION_KEY,
         SK: ITEM_ID,
+        modelOverride: 'gpt-4o',
+        enableLinkInPr: false,
+        updatedAt: 0,
       });
     }
     throw error;

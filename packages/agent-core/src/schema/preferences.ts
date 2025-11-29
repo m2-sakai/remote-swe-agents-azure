@@ -5,7 +5,7 @@ export const globalPreferencesSchema = z.object({
   id: z.string().default('general'),
   PK: z.literal('global-config'),
   SK: z.literal('general'),
-  modelOverride: modelTypeSchema.default('sonnet3.7'),
+  modelOverride: modelTypeSchema.default('gpt-4o'),
   enableLinkInPr: z.boolean().default(false),
   updatedAt: z.number().default(0),
 });

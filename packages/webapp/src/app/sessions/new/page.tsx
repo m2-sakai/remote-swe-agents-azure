@@ -36,7 +36,7 @@ export default async function NewSessionPage() {
       id: 'general',
       PK: 'global-config',
       SK: 'general',
-      modelOverride: 'sonnet3.7',
+      modelOverride: 'gpt-4o',
       enableLinkInPr: false,
       updatedAt: 0,
     };
