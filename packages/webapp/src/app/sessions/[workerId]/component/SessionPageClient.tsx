@@ -7,7 +7,7 @@ import { useScrollPosition } from '@/hooks/use-scroll-position';
 import Link from 'next/link';
 import { useAction } from 'next-safe-action/hooks';
 import { updateAgentStatus, sendEventToAgent } from '../actions';
-import { useWebPubSub } from '@/hooks/use-web-pub0sub';
+import { useWebPubSub } from '@/hooks/use-web-pub-sub';
 import MessageForm from './MessageForm';
 import MessageList, { MessageView } from './MessageList';
 import {
