@@ -7,7 +7,7 @@ import { useScrollPosition } from '@/hooks/use-scroll-position';
 import Link from 'next/link';
 import { useAction } from 'next-safe-action/hooks';
 import { updateAgentStatus, sendEventToAgent } from '../actions';
-import { useEventBus } from '@/hooks/use-event-bus';
+import { useWebPubSub } from '@/hooks/use-web-pub0sub';
 import MessageForm from './MessageForm';
 import MessageList, { MessageView } from './MessageList';
 import {
@@ -128,7 +128,7 @@ export default function SessionPageClient({
   });
 
   // Real-time communication via event bus
-  useEventBus({
+  useWebPubSub({
     channelName: `webapp/worker/${workerId}`,
     onReceived: useCallback(
       (payload: unknown) => {

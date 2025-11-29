@@ -45,9 +45,27 @@ export const getPreferences = async (): Promise<GlobalPreferences> => {
 
   try {
     const { resource } = await container.item(ITEM_ID, PARTITION_KEY).read();
-    return globalPreferencesSchema.parse(resource);
+    console.log('[getPreferences] raw resource:', resource);
+
+    if (!resource) {
+      console.log('[getPreferences] resource is undefined, returning default');
+      return globalPreferencesSchema.parse({
+        id: ITEM_ID,
+        PK: PARTITION_KEY,
+        SK: ITEM_ID,
+        modelOverride: 'gpt-4o',
+        enableLinkInPr: false,
+        updatedAt: 0,
+      });
+    }
+
+    const parsed = globalPreferencesSchema.parse(resource);
+    console.log('[getPreferences] parsed:', parsed);
+    return parsed;
   } catch (error: any) {
+    console.error('[getPreferences] error:', error);
     if (error.code === 404) {
+      console.log('[getPreferences] 404 error, returning default');
       // Return default preferences
       return globalPreferencesSchema.parse({
         id: ITEM_ID,

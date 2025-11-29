@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Plus, MessageSquare, Clock, DollarSign, Users, EyeOff } from 'lucide-react';
-import { useEventBus } from '@/hooks/use-event-bus';
+import { useWebPubSub } from '@/hooks/use-web-pub-sub';
 import { useCallback, useState, useEffect } from 'react';
 import { SessionItem, webappEventSchema } from '@remote-swe-agents-azure/agent-core/schema';
 import { getUnifiedStatus } from '@/utils/session-status';
@@ -35,7 +35,7 @@ export default function SessionsList({ initialSessions, currentUserId }: Session
     },
   });
 
-  useEventBus({
+  useWebPubSub({
     channelName: 'webapp/worker/*',
     onReceived: useCallback(
       (payload: unknown) => {

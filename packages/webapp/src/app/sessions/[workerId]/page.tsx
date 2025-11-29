@@ -17,15 +17,25 @@ export const revalidate = 0;
 
 export default async function SessionPage({ params }: PageProps<'/sessions/[workerId]'>) {
   const { workerId } = await params;
+  console.log('[SessionPage] workerId:', workerId);
+
   const session = await getSession(workerId);
+  console.log('[SessionPage] session:', session);
   if (!session) {
     notFound();
   }
 
+  console.log('[SessionPage] Fetching preferences...');
   const preferences = await getPreferences();
+  console.log('[SessionPage] preferences:', preferences);
+
   // Load conversation history from DynamoDB
+  console.log('[SessionPage] Fetching conversation history...');
   const { items: historyItems } = await getConversationHistory(workerId);
+  console.log('[SessionPage] historyItems count:', historyItems.length);
+
   const { messages: filteredMessages, items: filteredItems } = await noOpFiltering(historyItems);
+  console.log('[SessionPage] filteredMessages count:', filteredMessages.length);
 
   const messages: MessageView[] = [];
   const isMsg = (toolName: string | undefined) =>
