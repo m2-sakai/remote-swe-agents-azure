@@ -362,6 +362,71 @@ module cosmosAddRoleModule '../modules/cosmos-db/cosmos_add-role_module.bicep' =
   ]
 }
 
+// Web PubSub
+@description('Web PubSubのリソース名')
+@minLength(3)
+@maxLength(63)
+param webPubSubName string
+@description('Web PubSub用プライベートエンドポイントのリソース名')
+@minLength(2)
+@maxLength(64)
+param webPubSubPrivateEndpointName string
+@description('Web PubSub用接続する必要があるリモートリソースから取得したグループのID')
+param webPubSubPrivateLinkServiceGroupIds array
+@description('Web PubSub用仮想ネットワークのサブネット名')
+@minLength(1)
+@maxLength(80)
+param webPubSubPrivateEndpointSubnetName string
+@description('Web PubSub用プライベートDNSゾーンの情報')
+param webPubSubPrivateDnsZoneName string
+@description('Hub名')
+param hubName string
+module webPubSubModule '../modules/web-pubsub/wps_module.bicep' = {
+  name: take(webPubSubName, 64)
+  params: {
+    tag: tag
+    webPubSubName: webPubSubName
+  }
+  dependsOn: []
+}
+module webPubSubPrivateEndpointModule '../modules/private-endpoint/pep_module.bicep' = {
+  name: take(webPubSubPrivateEndpointName, 64)
+  params: {
+    tag: tag
+    privateEndpointName: webPubSubPrivateEndpointName
+    privateLinkServiceId: webPubSubModule.outputs.webPubSubId
+    privateLinkServiceGroupIds: webPubSubPrivateLinkServiceGroupIds
+    virtualNetworkName: virtualNetworkName
+    subnetName: webPubSubPrivateEndpointSubnetName
+    privateDnsZoneName: webPubSubPrivateDnsZoneName
+  }
+  dependsOn: [
+    virtualNetworkModule
+    pdzModule
+  ]
+}
+module webPubSubAddHubModule '../modules/web-pubsub/wps_add-hub_module.bicep' = {
+  name: '${take(webPubSubName, 40)}_Hub'
+  params: {
+    webPubSubName: webPubSubName
+    hubName: hubName
+  }
+  dependsOn: [
+    webPubSubModule
+  ]
+}
+module webPubSubAddRoleModule '../modules/web-pubsub/wps_add-role_module.bicep' = {
+  name: '${take(webPubSubName, 40)}_AddRole'
+  params: {
+    webPubSubName: webPubSubName
+    userAssignedIdentityName: userAssignedIdentityName
+  }
+  dependsOn: [
+    webPubSubModule
+    managedIdentityModule
+  ]
+}
+
 // Azure OpenAI
 @description('Azure OpenAI アカウントのリソース名')
 @minLength(2)

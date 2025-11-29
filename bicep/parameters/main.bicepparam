@@ -204,16 +204,12 @@ param aplAppSettings = [
     value: subscriptionId
   }
   {
+    name: 'AZURE_WEB_PUBSUB_ENDPOINT'
+    value: 'https://${webPubSubName}.webpubsub.azure.com'
+  }
+  {
     name: 'APP_ORIGIN'
     value: 'https://${appServiceName}.azurewebsites.net'
-  }
-  {
-    name: 'DEV_USER_EMAIL'
-    value: 'test@example.com'
-  }
-  {
-    name: 'DEV_USER_ID'
-    value: 'test-user-001'
   }
   {
     name: 'DOCKER_REGISTRY_SERVER_URL'
@@ -258,6 +254,16 @@ param cosmosPrivateLinkServiceGroupIds = [
 ]
 param cosmosPrivateEndpointSubnetName = 'Cosmos-sub-2_0'
 param cosmosPrivateDnsZoneName = 'privatelink.documents.azure.com'
+
+// Web PubSub
+param webPubSubName = 'm2-sakai-je-WPS-01'
+param webPubSubPrivateEndpointName = 'm2-sakai-je-PEP-PubSub-01'
+param webPubSubPrivateLinkServiceGroupIds = [
+  'webpubsub'
+]
+param webPubSubPrivateEndpointSubnetName = 'PubSub-sub-1_0'
+param webPubSubPrivateDnsZoneName = 'privatelink.webpubsub.azure.com'
+param hubName = 'remoteswehub'
 
 // Azure OpenAI
 param openAIAccountName = 'm2-sakai-je-openai-01'
@@ -449,6 +455,8 @@ SyslogIdentifier=myapp
 Environment=WORKER_RUNTIME=ec2
 Environment=AZURE_REGION=japaneast
 Environment=AZURE_STORAGE_ACCOUNT_NAME=YOUR_STORAGE_ACCOUNT_NAME
+Environment=AZURE_WEB_PUBSUB_ENDPOINT=YOUR_WEB_PUBSUB_ENDPOINT
+Environment=AZURE_CLIENT_ID=YOUR_MANAGED_IDENTITY_CLIENT_ID
 
 [Install]
 WantedBy=multi-user.target

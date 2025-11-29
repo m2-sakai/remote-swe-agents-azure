@@ -1,4 +1,5 @@
 import z from 'zod';
+import { DefaultAzureCredential } from '@azure/identity';
 import { webappEventSchema } from '../schema';
 
 /**
@@ -6,27 +7,60 @@ import { webappEventSchema } from '../schema';
  *
  * 環境変数:
  * - AZURE_WEB_PUBSUB_ENDPOINT: Web PubSub のエンドポイントURL
- * - AZURE_WEB_PUBSUB_KEY: アクセスキー (または Managed Identity を使用)
+ * - マネージドIDを使用して認証
  */
 const webPubSubEndpoint = process.env.AZURE_WEB_PUBSUB_ENDPOINT;
-const webPubSubKey = process.env.AZURE_WEB_PUBSUB_KEY;
+const credential = new DefaultAzureCredential();
+
+async function getAccessToken(): Promise<string | null> {
+  try {
+    console.log('[agent-core/events] Requesting MSI token for WebPubSub scope');
+    const tokenResponse = await credential.getToken('https://webpubsub.azure.com/.default');
+    console.log('[agent-core/events] Token acquired', {
+      hasToken: !!tokenResponse?.token,
+      expiresOnTimestamp: tokenResponse?.expiresOnTimestamp,
+    });
+    return tokenResponse.token;
+  } catch (error) {
+    const err = error as any;
+    console.error('[agent-core/events] Failed to get access token', {
+      message: err?.message,
+      name: err?.name,
+      stack: err?.stack,
+    });
+    return null;
+  }
+}
 
 async function sendEvent(channelPath: string, payload: any) {
   if (!webPubSubEndpoint) {
     // Web PubSub が設定されていない場合はスキップ
+    console.warn('[agent-core/events] Skipping sendEvent: AZURE_WEB_PUBSUB_ENDPOINT not set');
     return;
   }
 
   try {
+    // マネージドIDでトークンを取得
+    const token = await getAccessToken();
+    if (!token) {
+      console.error('[agent-core/events] No token, aborting send');
+      return;
+    }
+
     // Azure Web PubSub REST API を使用してイベントを送信
-    const hubName = 'event-bus'; // Hub名
+    const hubName = 'remoteswehub'; // Hub名
     const endpoint = `${webPubSubEndpoint}/api/hubs/${hubName}/:send`;
+    console.log('[agent-core/events] Sending event', {
+      endpoint,
+      channelPath,
+      payloadType: typeof payload,
+    });
 
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(webPubSubKey && { Authorization: `Bearer ${webPubSubKey}` }),
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         channel: channelPath,
@@ -35,13 +69,29 @@ async function sendEvent(channelPath: string, payload: any) {
     });
 
     if (!response.ok) {
-      console.error(`Failed to send event to ${channelPath}: ${response.status} ${response.statusText}`);
+      let bodyText: string | undefined;
+      try {
+        bodyText = await response.text();
+      } catch {
+        bodyText = undefined;
+      }
+      console.error('[agent-core/events] Send failed', {
+        channelPath,
+        status: response.status,
+        statusText: response.statusText,
+        body: bodyText,
+      });
       return;
     }
 
-    console.log(`Event sent to channel: ${channelPath}`);
+    console.log('[agent-core/events] Event sent', { channelPath });
   } catch (error) {
-    console.error(`Failed to send event to Azure Web PubSub:`, error);
+    const err = error as any;
+    console.error('[agent-core/events] Exception during send', {
+      message: err?.message,
+      name: err?.name,
+      stack: err?.stack,
+    });
   }
 }
 

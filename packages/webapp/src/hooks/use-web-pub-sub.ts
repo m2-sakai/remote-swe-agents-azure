@@ -18,6 +18,10 @@ export const useWebPubSub = ({ channelName, onReceived }: useWebPubSubProps) => 
 
     const connect = async () => {
       try {
+        console.log('[useWebPubSub] Starting connect flow', {
+          channelName,
+          time: new Date().toISOString(),
+        });
         // Extract workerId from channelName (format: webapp/worker/{workerId})
         const workerId = channelName.split('/').pop();
         if (!workerId) {
@@ -26,13 +30,29 @@ export const useWebPubSub = ({ channelName, onReceived }: useWebPubSubProps) => 
         }
 
         // Fetch client access token from API
-        const response = await fetch(`/api/pubsub?workerId=${workerId}`);
+        const tokenUrl = `/api/pubsub?workerId=${workerId}`;
+        console.log('[useWebPubSub] Fetching token', { tokenUrl });
+        const response = await fetch(tokenUrl);
         if (!response.ok) {
-          console.error('[useWebPubSub] Failed to fetch token:', response.statusText);
+          console.error('[useWebPubSub] Failed to fetch token:', {
+            status: response.status,
+            statusText: response.statusText,
+          });
           return;
         }
-
-        const { url } = await response.json();
+        const json = await response.json();
+        const { url, baseUrl, channelName: serverChannelName } = json;
+        console.log('[useWebPubSub] Token response received', {
+          baseUrl,
+          urlHost: (() => {
+            try {
+              return new URL(url).hostname;
+            } catch {
+              return 'n/a';
+            }
+          })(),
+          serverChannelName,
+        });
 
         // Create WebPubSub client
         const client = new WebPubSubClient(url);
@@ -51,9 +71,14 @@ export const useWebPubSub = ({ channelName, onReceived }: useWebPubSubProps) => 
 
         client.on('group-message', (e) => {
           if (e.message.group === channelName) {
-            console.log('[useWebPubSub] Received message:', e.message.data);
+            console.log('[useWebPubSub] Received message', {
+              group: e.message.group,
+              dataType: typeof e.message.data,
+              hasBinary: !!(e as any).data?.binaryData,
+            });
             try {
               const payload = typeof e.message.data === 'string' ? JSON.parse(e.message.data) : e.message.data;
+              console.log('[useWebPubSub] Parsed payload', { type: payload?.type });
               onReceived(payload);
             } catch (error) {
               console.error('[useWebPubSub] Failed to parse message:', error);
@@ -62,13 +87,21 @@ export const useWebPubSub = ({ channelName, onReceived }: useWebPubSubProps) => 
         });
 
         // Start connection
+        console.log('[useWebPubSub] Starting client connection...');
         await client.start();
+        console.log('[useWebPubSub] Client start resolved');
 
         // Join group
+        console.log('[useWebPubSub] Joining group...', { channelName });
         await client.joinGroup(channelName);
         console.log('[useWebPubSub] Joined group:', channelName);
       } catch (error) {
-        console.error('[useWebPubSub] Connection error:', error);
+        const err = error as any;
+        console.error('[useWebPubSub] Connection error:', {
+          message: err?.message,
+          name: err?.name,
+          stack: err?.stack,
+        });
       }
     };
 
@@ -80,11 +113,13 @@ export const useWebPubSub = ({ channelName, onReceived }: useWebPubSubProps) => 
       isActive = false;
       const client = clientRef.current;
       if (client) {
+        console.log('[useWebPubSub] Cleaning up connection', { channelName });
         client
           .leaveGroup(channelName)
           .catch((err: unknown) => console.error('[useWebPubSub] Failed to leave group:', err))
           .finally(() => {
             client.stop();
+            console.log('[useWebPubSub] Client stopped');
           });
       }
     };
