@@ -157,6 +157,13 @@ runcmd:
           disablePasswordAuthentication: false,
         },
       },
+      securityProfile: {
+        securityType: 'TrustedLaunch',
+        uefiSettings: {
+          secureBootEnabled: true,
+          vTpmEnabled: true,
+        },
+      },
       networkProfile: { networkInterfaces: [{ id: nic.id, primary: true }] },
       tags: { RemoteSweWorkerId: workerId },
     };
