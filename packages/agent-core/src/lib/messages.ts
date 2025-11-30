@@ -43,7 +43,7 @@ export const saveConversationHistoryAtomic = async (
   const SK2 = `${String(now + 1).padStart(15, '0')}`; // just add 1 to minimize the possibility of SK conflict
 
   const toolUseItem: MessageItem = {
-    id: `${PK}#${SK1}`,
+    id: `${PK}-${SK1}`,
     PK: PK as `message-${string}`,
     SK: SK1,
     content: await preProcessMessageContent(toolUseMessage.content, workerId),
@@ -54,7 +54,7 @@ export const saveConversationHistoryAtomic = async (
   };
 
   const toolResultItem: MessageItem = {
-    id: `${PK}#${SK2}`,
+    id: `${PK}-${SK2}`,
     PK: PK as `message-${string}`,
     SK: SK2,
     content: await preProcessMessageContent(toolResultMessage.content, workerId),
@@ -83,7 +83,7 @@ export const saveConversationHistory = async (
   const SK = `${String(Date.now()).padStart(15, '0')}`; // make sure it can be sorted in dictionary order
 
   const item = {
-    id: `${PK}#${SK}`,
+    id: `${PK}-${SK}`,
     PK: PK as `message-${string}`,
     SK,
     content: await preProcessMessageContent(message.content, workerId),
@@ -102,7 +102,7 @@ export const saveConversationHistory = async (
 export const updateMessageTokenCount = async (workerId: string, messageSK: string, tokenCount: number) => {
   const container = getContainer(CONTAINER_NAME);
   const PK = `message-${workerId}`;
-  const id = `${PK}#${messageSK}`;
+  const id = `${PK}-${messageSK}`;
 
   const { resource: existingMessage } = await container.item(id, PK).read();
   if (!existingMessage) {

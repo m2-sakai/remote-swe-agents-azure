@@ -73,13 +73,13 @@ export const createNewWorker = authActionClient
       instanceStatus: 'starting',
       sessionCost: 0,
       agentStatus: 'pending',
-      initiator: `webapp-${userId}`, // Remove # separator
+      initiator: `webapp-${userId}`,
       customAgentId: customAgentId !== 'DEFAULT' ? customAgentId : undefined, // Use original customAgentId (SK), not agent?.SK
       runtimeType,
     } satisfies SessionItem;
 
     const messageItem = {
-      id: `message-${workerId}-${String(Date.now()).padStart(15, '0')}`, // Remove # separator
+      id: `message-${workerId}-${String(Date.now()).padStart(15, '0')}`,
       PK: `message-${workerId}`,
       SK: `${String(Date.now()).padStart(15, '0')}`,
       content: JSON.stringify(content),

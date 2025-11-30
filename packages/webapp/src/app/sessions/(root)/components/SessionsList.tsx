@@ -135,7 +135,7 @@ export default function SessionsList({ initialSessions, currentUserId }: Session
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {sessions.map((session) => {
           const status = getUnifiedStatus(session.agentStatus, session.instanceStatus);
-          const isOtherUserSession = session.initiator && session.initiator !== `webapp#${currentUserId}`;
+          const isOtherUserSession = session.initiator && session.initiator !== `webapp-${currentUserId}`;
           return (
             <Link key={session.workerId} href={`/sessions/${session.workerId}`} className="block">
               <div

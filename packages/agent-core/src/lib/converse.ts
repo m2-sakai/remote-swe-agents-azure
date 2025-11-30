@@ -155,7 +155,7 @@ const trackTokenUsage = async (workerId: string, modelId: string, response: Conv
     const container = getContainer(TOKEN_USAGE_CONTAINER);
     const PK = `token-${workerId}`;
     const SK = modelId;
-    const id = `${PK}#${SK}`;
+    const id = `${PK}-${SK}`;
 
     // Try to get existing item
     try {

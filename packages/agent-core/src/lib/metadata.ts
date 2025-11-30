@@ -11,7 +11,7 @@ const CONTAINER_NAME = ContainerName;
 export const writeMetadata = async (tag: string, data: object, workerId: string = process.env.WORKER_ID!) => {
   const container = getContainer(CONTAINER_NAME);
   const PK = `metadata-${workerId}`;
-  const id = `${PK}#${tag}`;
+  const id = `${PK}-${tag}`;
 
   await container.items.upsert({
     id,
@@ -30,7 +30,7 @@ export const writeMetadata = async (tag: string, data: object, workerId: string 
 export const readMetadata = async (tag: string, workerId: string = process.env.WORKER_ID!) => {
   const container = getContainer(CONTAINER_NAME);
   const PK = `metadata-${workerId}`;
-  const id = `${PK}#${tag}`;
+  const id = `${PK}-${tag}`;
 
   try {
     const { resource: item } = await container.item(id, PK).read();
