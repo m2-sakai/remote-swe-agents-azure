@@ -8,9 +8,17 @@ import { InstanceStatus } from '../schema';
 const credential = new DefaultAzureCredential();
 const subscriptionId = process.env.AZURE_SUBSCRIPTION_ID || '';
 const resourceGroupName = process.env.AZURE_RESOURCE_GROUP_NAME || '';
-const vmImageId = process.env.AZURE_VM_IMAGE_ID || ''; // Managed Image or Azure Compute Gallery Image ID
+const vmImageId = process.env.AZURE_VM_IMAGE_ID || '';
 const vmSize = process.env.AZURE_VM_SIZE || 'Standard_D2s_v3';
 const subnetId = process.env.AZURE_VM_SUBNET_ID || '';
+
+function logEnvDiagnostics() {
+  console.log('[worker-manager/env] SUBSCRIPTION_ID set:', !!subscriptionId);
+  console.log('[worker-manager/env] RESOURCE_GROUP_NAME:', resourceGroupName || '(empty)');
+  console.log('[worker-manager/env] VM_IMAGE_ID:', vmImageId || '(empty)');
+  console.log('[worker-manager/env] VM_SIZE:', vmSize);
+  console.log('[worker-manager/env] SUBNET_ID set:', !!subnetId);
+}
 
 let computeClient: ComputeManagementClient | null = null;
 let networkClient: NetworkManagementClient | null = null;
@@ -20,6 +28,7 @@ function getComputeClient(): ComputeManagementClient {
     if (!subscriptionId) {
       throw new Error('AZURE_SUBSCRIPTION_ID environment variable is not set');
     }
+    console.log('[worker-manager] Creating ComputeManagementClient');
     computeClient = new ComputeManagementClient(credential, subscriptionId);
   }
   return computeClient;
@@ -30,6 +39,7 @@ function getNetworkClient(): NetworkManagementClient {
     if (!subscriptionId) {
       throw new Error('AZURE_SUBSCRIPTION_ID environment variable is not set');
     }
+    console.log('[worker-manager] Creating NetworkManagementClient');
     networkClient = new NetworkManagementClient(credential, subscriptionId);
   }
   return networkClient;
@@ -40,38 +50,29 @@ function getNetworkClient(): NetworkManagementClient {
  */
 export async function updateInstanceStatus(workerId: string, status: InstanceStatus) {
   try {
-    // Update the instanceStatus using the generic updateSession function
     await updateSession(workerId, { instanceStatus: status });
-
-    // Send event to webapp
-    await sendWebappEvent(workerId, {
-      type: 'instanceStatusChanged',
-      status,
-    });
-
-    console.log(`Instance status updated to ${status}`);
+    await sendWebappEvent(workerId, { type: 'instanceStatusChanged', status });
+    console.log('[worker-manager] instanceStatusChanged', { workerId, status });
   } catch (error) {
-    console.error(`Error updating instance status for workerId ${workerId}:`, error);
+    console.error('[worker-manager] Error updating instance status', { workerId, status, error });
   }
 }
 
 async function findWorkerVMInstance(workerId: string): Promise<string | null> {
   try {
-    // List all VMs in the resource group
+    console.log('[worker-manager] Searching for existing VM by tag RemoteSweWorkerId', { workerId });
     const vms = getComputeClient().virtualMachines.list(resourceGroupName);
-
     for await (const vm of vms) {
       if (!vm.tags) continue;
-
-      // Check if this VM has the matching workerId tag
       if (vm.tags['RemoteSweWorkerId'] === workerId) {
+        console.log('[worker-manager] Found existing VM', { vmName: vm.name });
         return vm.name || null;
       }
     }
-
+    console.log('[worker-manager] No existing VM found', { workerId });
     return null;
   } catch (error) {
-    console.error(`Error finding worker VM instance for workerId ${workerId}:`, error);
+    console.error('[worker-manager] Error finding worker VM', { workerId, error });
     throw error;
   }
 }
@@ -79,29 +80,29 @@ async function findWorkerVMInstance(workerId: string): Promise<string | null> {
 async function getVMInstanceStatus(vmName: string): Promise<string | null> {
   try {
     const instanceView = await getComputeClient().virtualMachines.instanceView(resourceGroupName, vmName);
-
     if (instanceView.statuses && instanceView.statuses.length > 0) {
-      // Find the PowerState status
       const powerState = instanceView.statuses.find((status: any) => status.code?.startsWith('PowerState/'));
       if (powerState?.code) {
-        // Extract the state (e.g., "PowerState/running" -> "running")
-        return powerState.code.split('/')[1] || null;
+        const state = powerState.code.split('/')[1] || null;
+        console.log('[worker-manager] VM power state', { vmName, state });
+        return state;
       }
     }
-
+    console.log('[worker-manager] VM power state not found', { vmName });
     return null;
   } catch (error) {
-    console.error(`Error getting VM instance status for VM ${vmName}:`, error);
+    console.error('[worker-manager] Error getting VM instance status', { vmName, error });
     return null;
   }
 }
 
 async function startVMInstance(vmName: string): Promise<void> {
   try {
+    console.log('[worker-manager] Starting existing VM', { vmName });
     await getComputeClient().virtualMachines.beginStartAndWait(resourceGroupName, vmName);
-    console.log(`Started VM instance ${vmName}`);
+    console.log('[worker-manager] Started VM instance', { vmName });
   } catch (error) {
-    console.error(`Error starting VM instance ${vmName}:`, error);
+    console.error('[worker-manager] Error starting VM', { vmName, error });
     throw error;
   }
 }
@@ -110,27 +111,25 @@ async function createVMInstance(workerId: string): Promise<{ instanceId: string 
   try {
     const vmName = `worker-${workerId}`;
     const nicName = `${vmName}-nic`;
+    console.log('[worker-manager] Creating new VM', { workerId, vmName });
 
-    // Create network interface
     const nicParams = {
       location: process.env.AZURE_LOCATION || 'eastus',
       ipConfigurations: [
         {
           name: 'ipconfig1',
-          subnet: {
-            id: subnetId,
-          },
+          subnet: { id: subnetId },
         },
       ],
     };
-
+    console.log('[worker-manager] Creating NIC', { nicName, subnetId });
     const nic = await getNetworkClient().networkInterfaces.beginCreateOrUpdateAndWait(
       resourceGroupName,
       nicName,
       nicParams as any
     );
+    console.log('[worker-manager] NIC created', { nicId: nic.id });
 
-    // Create cloud-init script to start the service
     const storageAccountName = process.env.AZURE_STORAGE_ACCOUNT_NAME || '';
     const cloudInitScript = `#cloud-config
 write_files:
@@ -142,23 +141,12 @@ runcmd:
   - systemctl daemon-reload
   - systemctl start myapp.service
 `;
-
-    // Create VM
     const vmParams = {
       location: process.env.AZURE_LOCATION || 'eastus',
-      hardwareProfile: {
-        vmSize: vmSize,
-      },
+      hardwareProfile: { vmSize },
       storageProfile: {
-        imageReference: {
-          id: vmImageId,
-        },
-        osDisk: {
-          createOption: 'FromImage',
-          managedDisk: {
-            storageAccountType: 'Premium_LRS',
-          },
-        },
+        imageReference: { id: vmImageId },
+        osDisk: { createOption: 'FromImage', managedDisk: { storageAccountType: 'Premium_LRS' } },
       },
       osProfile: {
         computerName: vmName,
@@ -176,36 +164,27 @@ runcmd:
           },
         },
       },
-      networkProfile: {
-        networkInterfaces: [
-          {
-            id: nic.id,
-            primary: true,
-          },
-        ],
-      },
-      tags: {
-        RemoteSweWorkerId: workerId,
-      },
+      networkProfile: { networkInterfaces: [{ id: nic.id, primary: true }] },
+      tags: { RemoteSweWorkerId: workerId },
     };
-
+    console.log('[worker-manager] Creating VM with params', { vmName, vmImageId, vmSize });
     await getComputeClient().virtualMachines.beginCreateOrUpdateAndWait(resourceGroupName, vmName, vmParams as any);
-
-    console.log(`Created VM instance ${vmName} for workerId ${workerId}`);
+    console.log('[worker-manager] VM created', { vmName, workerId });
     return { instanceId: vmName };
   } catch (error) {
-    console.error(`Error creating VM instance for workerId ${workerId}:`, error);
+    console.error('[worker-manager] Error creating VM', { workerId, error });
     throw error;
   }
 }
 
 export async function getOrCreateWorkerInstance(
   workerId: string,
-  workerType: 'agent-core' | 'ec2' = 'ec2'
+  workerType: 'agent-core' | 'vm' = 'vm'
 ): Promise<{ instanceId: string; oldStatus: 'stopped' | 'terminated' | 'running' }> {
-  // For agent-core runtime, return immediately (local execution)
-  if (workerType === 'agent-core') {
-    console.log(`Using agent-core runtime for workerId ${workerId}`);
+  console.log('[worker-manager] getOrCreateWorkerInstance START', { workerId, workerType });
+  logEnvDiagnostics();
+  if (workerType === 'vm') {
+    console.log('[worker-manager] Using agent-core runtime, skipping VM creation', { workerId });
     return { instanceId: 'local', oldStatus: 'running' };
   }
 
@@ -216,20 +195,18 @@ export async function getOrCreateWorkerInstance(
     const status = await getVMInstanceStatus(existingVM);
 
     if (status === 'running' || status === 'starting') {
-      console.log(`VM instance ${existingVM} is already running for workerId ${workerId}`);
+      console.log('[worker-manager] VM already running', { workerId, vmName: existingVM, status });
       return { instanceId: existingVM, oldStatus: 'running' };
     }
-
     if (status === 'deallocated' || status === 'stopped') {
-      console.log(`Starting stopped VM instance ${existingVM} for workerId ${workerId}`);
+      console.log('[worker-manager] Starting stopped VM', { workerId, vmName: existingVM, status });
       await updateInstanceStatus(workerId, 'starting');
       await startVMInstance(existingVM);
       return { instanceId: existingVM, oldStatus: 'stopped' };
     }
   }
 
-  // No existing instance found, create a new one
-  console.log(`Creating new VM instance for workerId ${workerId}`);
+  console.log('[worker-manager] No existing instance, creating new', { workerId });
   await updateInstanceStatus(workerId, 'starting');
   const { instanceId } = await createVMInstance(workerId);
   return { instanceId, oldStatus: 'terminated' };

@@ -51,7 +51,7 @@ export const sendMessageToAgent = authActionClient
 
     await sendWorkerEvent(workerId, { type: 'onMessageReceived' });
 
-    await getOrCreateWorkerInstance(workerId, session.runtimeType ?? 'ec2');
+    await getOrCreateWorkerInstance(workerId, session.runtimeType ?? 'vm');
 
     return { success: true, item };
   });

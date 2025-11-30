@@ -68,8 +68,8 @@ export async function POST(request: NextRequest) {
     },
   ]);
 
-  // Start EC2 instance for the worker
-  await getOrCreateWorkerInstance(workerId);
+  // Start Azure VM instance for the worker
+  await getOrCreateWorkerInstance(workerId, 'vm');
 
   // Send worker event to notify message received
   await sendWorkerEvent(workerId, { type: 'onMessageReceived' });

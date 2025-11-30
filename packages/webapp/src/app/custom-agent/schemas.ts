@@ -22,7 +22,7 @@ export const upsertCustomAgentSchema = z.object({
         return false;
       }
     }, 'Invalid mcpConfig schema.'),
-  runtimeType: z.union([z.literal('ec2'), z.literal('agent-core')]),
+  runtimeType: z.union([z.literal('vm'), z.literal('agent-core')]),
 });
 
 export const deleteCustomAgentSchema = z.object({

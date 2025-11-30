@@ -68,8 +68,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     modelOverride,
   } satisfies MessageItem & { id: string });
 
-  // Start EC2 instance for the worker
-  await getOrCreateWorkerInstance(sessionId);
+  // Start Azure VM instance for the worker
+  await getOrCreateWorkerInstance(sessionId, session.runtimeType ?? 'vm');
 
   // Send worker event to notify message received
   await sendWorkerEvent(sessionId, { type: 'onMessageReceived' });

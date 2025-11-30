@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { modelTypeSchema } from './model';
 
 export const agentStatusSchema = z.union([z.literal('working'), z.literal('pending'), z.literal('completed')]);
-export const runtimeTypeSchema = z.union([z.literal('ec2'), z.literal('agent-core')]);
+export const runtimeTypeSchema = z.union([z.literal('vm'), z.literal('agent-core')]);
 
 export type AgentStatus = z.infer<typeof agentStatusSchema>;
 export type RuntimeType = z.infer<typeof runtimeTypeSchema>;

@@ -71,7 +71,7 @@ export default function CustomAgentForm({ availableTools, editingAgent, onSucces
         systemPrompt: editingAgent?.systemPrompt ?? '',
         tools: editingAgent?.tools ?? [],
         mcpConfig: editingAgent?.mcpConfig ?? JSON.stringify(EmptyMcpConfig, undefined, 2),
-        runtimeType: editingAgent?.runtimeType ?? 'agent-core',
+        runtimeType: editingAgent?.runtimeType ?? 'vm',
       },
     },
   });

@@ -30,16 +30,15 @@ export const createNewWorker = authActionClient
     const agent = await getCustomAgent(customAgentId);
     console.log('[createNewWorker] Custom agent:', agent ? `Found: ${agent.name}` : 'Not found, using default');
 
-    // TODO: Change to 'ec2' after VM setup is complete
-    const runtimeType = agent?.runtimeType ?? 'agent-core'; // Use agent-core as default for development
+    const runtimeType = agent?.runtimeType ?? 'vm'; // Default to VM runtime
     console.log('[createNewWorker] Runtime type:', runtimeType);
 
-    if (runtimeType == 'agent-core') {
+    if (runtimeType == 'vm') {
       // AgentCore Runtime sessionId must have length greater than or equal to 33
       const lacking = 33 - workerId.length;
       if (lacking > 0) {
         workerId = `${workerId}-${randomBytes(~~(lacking / 2)).toString('hex')}`;
-        console.log('[createNewWorker] Extended workerId for agent-core:', workerId);
+        console.log('[createNewWorker] Extended workerId for vm runtime:', workerId);
       }
     }
 

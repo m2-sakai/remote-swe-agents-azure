@@ -196,6 +196,14 @@ param aplAppSettings = [
     value: 'https://${cosmosDbName}.documents.azure.com/'
   }
   {
+    name: 'AZURE_VM_IMAGE_ID'
+    value: '/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Compute/galleries/${galleryName}/images/${imageDefinitionName}/versions/${imageVersion}'
+  }
+  {
+    name: 'AZURE_VM_SIZE'
+    value: 'Standard_D2s_v3'
+  }
+  {
     name: 'AZURE_VM_SUBNET_ID'
     value: '/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Network/virtualNetworks/${virtualNetworkName}/subnets/Vm-sub-6_0'
   }
