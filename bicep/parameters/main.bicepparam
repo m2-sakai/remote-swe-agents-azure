@@ -196,6 +196,14 @@ param aplAppSettings = [
     value: 'https://${cosmosDbName}.documents.azure.com/'
   }
   {
+    name: 'AZURE_VM_ADMIN_USERNAME'
+    value: 'azureuser'
+  }
+  {
+    name: 'AZURE_VM_ADMIN_PASSWORD'
+    value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=VmAdminPassword)'
+  }
+  {
     name: 'AZURE_VM_IMAGE_ID'
     value: '/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Compute/galleries/${galleryName}/images/${imageDefinitionName}/versions/${imageVersion}'
   }
@@ -206,6 +214,10 @@ param aplAppSettings = [
   {
     name: 'AZURE_VM_SUBNET_ID'
     value: '/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Network/virtualNetworks/${virtualNetworkName}/subnets/Vm-sub-6_0'
+  }
+  {
+    name: 'AZURE_LOCATION'
+    value: 'japaneast'
   }
   {
     name: 'AZURE_SUBSCRIPTION_ID'

@@ -114,7 +114,7 @@ async function createVMInstance(workerId: string): Promise<{ instanceId: string 
     console.log('[worker-manager] Creating new VM', { workerId, vmName });
 
     const nicParams = {
-      location: process.env.AZURE_LOCATION || 'eastus',
+      location: process.env.AZURE_LOCATION || 'japaneast',
       ipConfigurations: [
         {
           name: 'ipconfig1',
@@ -151,17 +151,10 @@ runcmd:
       osProfile: {
         computerName: vmName,
         adminUsername: process.env.AZURE_VM_ADMIN_USERNAME || 'azureuser',
+        adminPassword: process.env.AZURE_VM_ADMIN_PASSWORD,
         customData: Buffer.from(cloudInitScript).toString('base64'),
         linuxConfiguration: {
-          disablePasswordAuthentication: true,
-          ssh: {
-            publicKeys: [
-              {
-                path: `/home/${process.env.AZURE_VM_ADMIN_USERNAME || 'azureuser'}/.ssh/authorized_keys`,
-                keyData: process.env.AZURE_VM_SSH_PUBLIC_KEY!,
-              },
-            ],
-          },
+          disablePasswordAuthentication: false,
         },
       },
       networkProfile: { networkInterfaces: [{ id: nic.id, primary: true }] },
@@ -183,7 +176,7 @@ export async function getOrCreateWorkerInstance(
 ): Promise<{ instanceId: string; oldStatus: 'stopped' | 'terminated' | 'running' }> {
   console.log('[worker-manager] getOrCreateWorkerInstance START', { workerId, workerType });
   logEnvDiagnostics();
-  if (workerType === 'vm') {
+  if (workerType === 'agent-core') {
     console.log('[worker-manager] Using agent-core runtime, skipping VM creation', { workerId });
     return { instanceId: 'local', oldStatus: 'running' };
   }
