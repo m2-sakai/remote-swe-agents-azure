@@ -63,7 +63,7 @@ const storePRRecord = async (workerId: string, url: string, branchName: string) 
   const container = getContainer(CONTAINER_NAME);
   const PK = `artifact-${workerId}`;
   const SK = `pr-${url}`;
-  const id = `${PK}#${SK}`;
+  const id = `${PK}-${SK}`;
 
   await container.items.create({
     id,
