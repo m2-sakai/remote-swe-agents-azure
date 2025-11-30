@@ -58,7 +58,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   // Save the message
   const timestamp = String(Date.now()).padStart(15, '0');
   await putItem(ContainerName, {
-    id: `message-${sessionId}#${timestamp}`,
+    id: `message-${sessionId}-${timestamp}`,
     PK: `message-${sessionId}`,
     SK: timestamp,
     content: JSON.stringify(content),

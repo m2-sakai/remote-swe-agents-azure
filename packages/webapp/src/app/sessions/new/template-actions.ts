@@ -25,7 +25,7 @@ export const createPromptTemplate = authActionClient.schema(createTemplateSchema
   const id = now.toString();
 
   await putItem(ContainerName, {
-    id: `prompt-template#${id}`,
+    id: `prompt-template-${id}`,
     PK: 'prompt-template',
     SK: id,
     content,
@@ -39,7 +39,7 @@ export const createPromptTemplate = authActionClient.schema(createTemplateSchema
 export const updatePromptTemplate = authActionClient.schema(updateTemplateSchema).action(async ({ parsedInput }) => {
   const { id, content } = parsedInput;
 
-  await updateItem(ContainerName, `prompt-template#${id}`, 'prompt-template', { content });
+  await updateItem(ContainerName, `prompt-template-${id}`, 'prompt-template', { content });
 
   revalidatePath('/sessions/new');
   return { success: true };
@@ -48,7 +48,7 @@ export const updatePromptTemplate = authActionClient.schema(updateTemplateSchema
 export const deletePromptTemplate = authActionClient.schema(deleteTemplateSchema).action(async ({ parsedInput }) => {
   const { id } = parsedInput;
 
-  await deleteItem(ContainerName, `prompt-template#${id}`, 'prompt-template');
+  await deleteItem(ContainerName, `prompt-template-${id}`, 'prompt-template');
 
   revalidatePath('/sessions/new');
   return { success: true };

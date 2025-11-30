@@ -36,7 +36,7 @@ export const sendMessageToAgent = authActionClient
 
     const timestamp = String(Date.now()).padStart(15, '0');
     const item: MessageItem = {
-      id: `message-${workerId}#${timestamp}`,
+      id: `message-${workerId}-${timestamp}`,
       PK: `message-${workerId}`,
       SK: timestamp,
       content: JSON.stringify(content),

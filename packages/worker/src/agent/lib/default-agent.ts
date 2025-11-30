@@ -18,7 +18,7 @@ import {
 import { readFileSync } from 'fs';
 
 export const DefaultAgent: CustomAgent = {
-  id: 'custom-agent#0',
+  id: 'custom-agent-0',
   PK: 'custom-agent',
   SK: '0',
   name: 'default agent',

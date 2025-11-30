@@ -39,8 +39,7 @@ export async function POST(request: NextRequest) {
     {
       type: 'Put',
       item: {
-        // Session record
-        id: `sessions#${workerId}`,
+        id: `sessions-${workerId}`,
         PK: 'sessions',
         SK: workerId,
         workerId,
@@ -51,13 +50,13 @@ export async function POST(request: NextRequest) {
         instanceStatus: 'starting',
         agentStatus: 'pending',
         sessionCost: 0,
-        initiator: `rest#`,
+        initiator: `rest`,
       } satisfies SessionItem,
     },
     {
       type: 'Put',
       item: {
-        id: `message-${workerId}#${messageTimestamp}`,
+        id: `message-${workerId}-${messageTimestamp}`,
         PK: `message-${workerId}`,
         SK: messageTimestamp,
         content: JSON.stringify(content),
