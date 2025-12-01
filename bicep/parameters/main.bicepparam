@@ -196,6 +196,10 @@ param aplAppSettings = [
     value: 'https://${cosmosDbName}.documents.azure.com/'
   }
   {
+    name: 'AZURE_USER_ASSIGNED_IDENTITY_ID'
+    value: '/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${userAssignedIdentityName}'
+  }
+  {
     name: 'AZURE_VM_ADMIN_USERNAME'
     value: 'azureuser'
   }
@@ -374,13 +378,8 @@ sudo -u azureuser bash -c 'curl -LsSf https://astral.sh/uv/install.sh | sh'
 mkdir -p /opt/myapp && cd /opt/myapp
 chown -R azureuser:azureuser /opt/myapp
 
-# Install Playwright dependencies
-sudo -u azureuser npx --yes playwright install-deps
-sudo -u azureuser npx --yes playwright install chromium
-
-# Disable Ubuntu security feature for Chromium
-echo 0 | tee /proc/sys/kernel/apparmor_restrict_unprivileged_userns
-echo kernel.apparmor_restrict_unprivileged_userns=0 | tee /etc/sysctl.d/60-apparmor-namespace.conf
+# Note: Playwright installation skipped - only GitHub integration required
+# If browser automation is needed in the future, install during VM boot via start-app.sh
 
 # Configure GitHub CLI
 sudo -u azureuser bash -c "gh config set prompt disabled"
@@ -419,9 +418,7 @@ download_fresh_files() {
   npm ci
   npm run build -w packages/agent-core
   
-  cd packages/worker
-  npx playwright install chromium
-  cd -
+  # Note: Playwright chromium install removed - not needed for GitHub-only integration
   
   # Save ETag
   echo "$CURRENT_ETAG" > "$ETAG_FILE"
