@@ -265,6 +265,7 @@ param storageAccountPrivateLinkServiceGroupIds = [
 ]
 param storageAccountPrivateEndpointSubnetName = 'Storage-sub-5_0'
 param storageAccountPrivateDnsZoneName = 'privatelink.blob.core.windows.net'
+param blobContainerName = 'worker-source'
 
 // Cosmos DB
 param cosmosDbName = 'm2-sakai-je-cosmos-01'
@@ -311,11 +312,15 @@ param setupScript = '''
 #!/bin/bash
 set -e
 
+# Prevent interactive prompts during package installation
+export DEBIAN_FRONTEND=noninteractive
+export NEEDRESTART_MODE=a
+
 echo "=== Starting Worker VM Setup ==="
 
 # System update
 apt-get -o DPkg::Lock::Timeout=-1 update
-apt-get -o DPkg::Lock::Timeout=-1 upgrade -y
+apt-get -o DPkg::Lock::Timeout=-1 -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" upgrade -y
 
 # Install Python3
 apt-get -o DPkg::Lock::Timeout=-1 install -y python3-pip unzip
@@ -332,15 +337,22 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.
 
 apt-get -o DPkg::Lock::Timeout=-1 update
 apt-get -o DPkg::Lock::Timeout=-1 install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+# Create azureuser if not exists (for Image Builder environment)
+if ! id azureuser >/dev/null 2>&1; then
+    useradd -m -s /bin/bash azureuser
+fi
+
 groupadd docker || true
 usermod -aG docker azureuser
 
-# Install Node.js via nvm
-sudo -u azureuser bash -c "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash"
-sudo -u azureuser bash -c -i "nvm install 22"
+# Install Node.js 22 from NodeSource
+curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+apt-get install -y nodejs
 
 # Install Azure CLI
 curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+az login --identity
 
 # Install GitHub CLI
 (type -p wget >/dev/null || (apt update && apt-get install wget -y)) \
@@ -364,8 +376,8 @@ mkdir -p /opt/myapp && cd /opt/myapp
 chown -R azureuser:azureuser /opt/myapp
 
 # Install Playwright dependencies
-sudo -u azureuser bash -i -c "npx playwright install-deps"
-sudo -u azureuser bash -i -c "npx playwright install chromium"
+sudo -u azureuser npx --yes playwright install-deps
+sudo -u azureuser npx --yes playwright install chromium
 
 # Disable Ubuntu security feature for Chromium
 echo 0 | tee /proc/sys/kernel/apparmor_restrict_unprivileged_userns
@@ -382,7 +394,7 @@ cat << 'STARTEOF' > /opt/scripts/start-app.sh
 #!/bin/bash
 set -e
 
-STORAGE_ACCOUNT_NAME="${AZURE_STORAGE_ACCOUNT_NAME}"
+STORAGE_ACCOUNT_NAME="m2sakaijestorage01"
 CONTAINER_NAME="worker-source"
 BLOB_NAME="source.tar.gz"
 ETAG_FILE="/opt/myapp/.source_etag"
@@ -394,9 +406,9 @@ download_fresh_files() {
   
   # Download from Blob Storage using Managed Identity
   az storage blob download \
-    --account-name $STORAGE_ACCOUNT_NAME \
-    --container-name $CONTAINER_NAME \
-    --name $BLOB_NAME \
+    --account-name m2sakaijestorage01 \
+    --container-name worker-source \
+    --name source.tar.gz \
     --file ./source.tar.gz \
     --auth-mode login
   
@@ -418,9 +430,9 @@ download_fresh_files() {
 
 # Get current ETag from Blob Storage
 CURRENT_ETAG=$(az storage blob show \
-  --account-name $STORAGE_ACCOUNT_NAME \
-  --container-name $CONTAINER_NAME \
-  --name $BLOB_NAME \
+  --account-name m2sakaijestorage01 \
+  --container-name worker-source \
+  --name source.tar.gz \
   --auth-mode login \
   --query etag -o tsv)
 
@@ -454,7 +466,7 @@ chmod +x /opt/scripts/start-app.sh
 chown azureuser:azureuser /opt/scripts/start-app.sh
 
 # Cache worker files
-sudo -u azureuser bash -i -c "NO_START=true /opt/scripts/start-app.sh"
+sudo -u azureuser bash -c "NO_START=true /opt/scripts/start-app.sh"
 
 # Create systemd service
 cat << 'SERVICEEOF' > /etc/systemd/system/myapp.service
@@ -467,7 +479,7 @@ Requires=docker.service
 Type=simple
 User=azureuser
 WorkingDirectory=/opt/myapp
-ExecStart=/bin/bash -i -c /opt/scripts/start-app.sh
+ExecStart=/bin/bash /opt/scripts/start-app.sh
 Restart=always
 RestartSec=10
 TimeoutStartSec=600
@@ -475,11 +487,11 @@ TimeoutStopSec=10s
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=myapp
-Environment=WORKER_RUNTIME=ec2
+Environment=WORKER_RUNTIME=vm
 Environment=AZURE_REGION=japaneast
-Environment=AZURE_STORAGE_ACCOUNT_NAME=YOUR_STORAGE_ACCOUNT_NAME
-Environment=AZURE_WEB_PUBSUB_ENDPOINT=YOUR_WEB_PUBSUB_ENDPOINT
-Environment=AZURE_CLIENT_ID=YOUR_MANAGED_IDENTITY_CLIENT_ID
+Environment=AZURE_STORAGE_ACCOUNT_NAME=m2sakaijestorage01
+Environment=AZURE_WEB_PUBSUB_ENDPOINT=https://m2-sakai-je-WPS-01.webpubsub.azure.com
+Environment=AZURE_CLIENT_ID=0e7bc110-c9e7-470c-b387-550321a0d73c
 
 [Install]
 WantedBy=multi-user.target

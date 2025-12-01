@@ -275,6 +275,10 @@ param storageAccountPrivateLinkServiceGroupIds array
 param storageAccountPrivateEndpointSubnetName string
 @description('Storage Account用プライベートDNSゾーンの情報')
 param storageAccountPrivateDnsZoneName string
+@description('コンテナ名')
+@minLength(3)
+@maxLength(63)
+param blobContainerName string
 module storageAccountModule '../modules/storage-account/st_module.bicep' = {
   name: take(storageAccountName, 64)
   params: {
@@ -308,6 +312,16 @@ module storageAccountAddRoleModule '../modules/storage-account/st_add-role_modul
   dependsOn: [
     storageAccountModule
     managedIdentityModule
+  ]
+}
+module storageAccountAddContainerModule '../modules/storage-account/st_add-container_module.bicep' = {
+  name: '${take(storageAccountName, 40)}_Container'
+  params: {
+    storageAccountName: storageAccountName
+    blobContainerName: blobContainerName
+  }
+  dependsOn: [
+    storageAccountModule
   ]
 }
 

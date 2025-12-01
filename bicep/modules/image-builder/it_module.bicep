@@ -62,8 +62,8 @@ resource imageTemplate 'Microsoft.VirtualMachineImages/imageTemplates@2024-02-01
     source: {
       type: 'PlatformImage'
       publisher: 'Canonical'
-      offer: '0001-com-ubuntu-server-jammy'
-      sku: '22_04-lts-gen2'
+      offer: 'ubuntu-24_04-lts'
+      sku: 'server'
       version: 'latest'
     }
     customize: [

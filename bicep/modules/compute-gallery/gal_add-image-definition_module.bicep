@@ -36,7 +36,7 @@ param publisher string = 'RemoteSweAgents'
 param offer string = 'WorkerVM'
 
 @description('SKU')
-param sku string = 'Ubuntu2204'
+param sku string = 'Ubuntu2404'
 
 resource existingGallery 'Microsoft.Compute/galleries@2024-03-03' existing = {
   name: galleryName
