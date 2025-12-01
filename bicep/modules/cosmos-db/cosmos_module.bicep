@@ -12,7 +12,7 @@ param tag object = {
 @description('Cosmos DB のリソース名')
 param cosmosDbName string
 
-resource cosmosDb 'Microsoft.DocumentDB/databaseAccounts@2025-05-01-preview' = {
+resource cosmosDb 'Microsoft.DocumentDB/databaseAccounts@2025-10-15' = {
   name: cosmosDbName
   location: location
   tags: tag

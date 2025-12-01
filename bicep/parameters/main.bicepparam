@@ -10,7 +10,7 @@ param tag = {
 }
 
 // マネージドID
-param userAssignedIdentityName = 'm2-sakai-je-ID-01'
+param userAssignedIdentityName = 'm2-sakai-je-ID-99'
 
 // Log Analytics / Application Insights
 param logAnalyticsWorkspaceName = 'm2-sakai-je-LOGANA-01'
@@ -268,6 +268,9 @@ param storageAccountPrivateDnsZoneName = 'privatelink.blob.core.windows.net'
 
 // Cosmos DB
 param cosmosDbName = 'm2-sakai-je-cosmos-01'
+param cosmosDatabaseName = 'remote-swe-agents'
+param cosmosContainerName = 'remote-swe-agents'
+param cosmosPartitionKeyPath = '/PK'
 param cosmosPrivateEndpointName = 'm2-sakai-je-PEP-COSMOS-01'
 param cosmosPrivateLinkServiceGroupIds = [
   'Sql'

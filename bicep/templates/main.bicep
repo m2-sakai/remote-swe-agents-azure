@@ -327,6 +327,12 @@ param cosmosPrivateLinkServiceGroupIds array
 param cosmosPrivateEndpointSubnetName string
 @description('Cosmos DB用プライベートDNSゾーンの情報')
 param cosmosPrivateDnsZoneName string
+@description('Cosmos DB データベース名')
+param cosmosDatabaseName string
+@description('Cosmos DB コンテナ名')
+param cosmosContainerName string
+@description('Cosmos DB パーティションキー')
+param cosmosPartitionKeyPath string
 module cosmosDbModule '../modules/cosmos-db/cosmos_module.bicep' = {
   name: take(cosmosDbName, 64)
   params: {
@@ -359,6 +365,28 @@ module cosmosAddRoleModule '../modules/cosmos-db/cosmos_add-role_module.bicep' =
   dependsOn: [
     cosmosDbModule
     managedIdentityModule
+  ]
+}
+module cosmosAddDatabaseModule '../modules/cosmos-db/cosmos_add-database_module.bicep' = {
+  name: '${take(cosmosDbName, 40)}_Database'
+  params: {
+    cosmosDbName: cosmosDbName
+    databaseName: cosmosDatabaseName
+  }
+  dependsOn: [
+    cosmosDbModule
+  ]
+}
+module cosmosAddContainerModule '../modules/cosmos-db/cosmos_add-container_module.bicep' = {
+  name: '${take(cosmosDbName, 40)}_Container'
+  params: {
+    cosmosDbName: cosmosDbName
+    databaseName: cosmosDatabaseName
+    containerName: cosmosContainerName
+    partitionKeyPath: cosmosPartitionKeyPath
+  }
+  dependsOn: [
+    cosmosAddDatabaseModule
   ]
 }
 
@@ -548,6 +576,7 @@ module imageTemplateModule '../modules/image-builder/it_module.bicep' = {
   }
   dependsOn: [
     managedIdentityAddRoleModule
+    virtualNetworkModule
     galleryAddImageDefinitionModule
   ]
 }
