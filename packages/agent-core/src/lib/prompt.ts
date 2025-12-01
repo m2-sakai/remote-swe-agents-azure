@@ -49,7 +49,7 @@ export const readCommonPrompt = async (): Promise<CommonPromptData | null> => {
     const container = getContainer(CONTAINER_NAME);
     const PK = GlobalConfigKeys.PK;
     const SK = GlobalConfigKeys.PromptSK;
-    const id = `${PK}#${SK}`;
+    const id = `${PK}-${SK}`;
 
     const { resource: item } = await container.item(id, PK).read();
 
@@ -78,7 +78,7 @@ export const writeCommonPrompt = async (data: CommonPromptData): Promise<void> =
   const container = getContainer(CONTAINER_NAME);
   const PK = GlobalConfigKeys.PK;
   const SK = GlobalConfigKeys.PromptSK;
-  const id = `${PK}#${SK}`;
+  const id = `${PK}-${SK}`;
 
   await container.items.upsert({
     id,
