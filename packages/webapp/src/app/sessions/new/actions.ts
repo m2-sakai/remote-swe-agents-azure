@@ -110,27 +110,22 @@ export const createNewWorker = authActionClient
       throw error;
     }
 
-    // Start worker instance and send event asynchronously (non-blocking)
-    console.log('[createNewWorker] Starting worker instance asynchronously...');
-    Promise.resolve()
-      .then(async () => {
-        try {
-          console.log('[createNewWorker/async] Starting worker instance...');
-          await getOrCreateWorkerInstance(workerId, runtimeType);
-          console.log('[createNewWorker/async] Worker instance started');
+    try {
+      console.log('[createNewWorker] Starting worker instance...');
+      // Start worker instance for the worker
+      await getOrCreateWorkerInstance(workerId, runtimeType);
+      console.log('[createNewWorker] Worker instance started');
 
-          console.log('[createNewWorker/async] Sending worker event...');
-          await sendWorkerEvent(workerId, { type: 'onMessageReceived' });
-          console.log('[createNewWorker/async] Worker event sent');
-        } catch (e) {
-          console.error('[createNewWorker/async] Worker startup failed:', e);
-          await updateInstanceStatus(workerId, 'terminated');
-        }
-      })
-      .catch((e) => {
-        console.error('[createNewWorker/async] Unhandled error:', e);
-      });
+      console.log('[createNewWorker] Sending worker event...');
+      // Send worker event to notify message received
+      await sendWorkerEvent(workerId, { type: 'onMessageReceived' });
+      console.log('[createNewWorker] Worker event sent');
+    } catch (e) {
+      console.error('[createNewWorker] Worker startup failed:', e);
+      await updateInstanceStatus(workerId, 'terminated');
+      throw e;
+    }
 
-    console.log('[createNewWorker] Redirecting to session immediately:', workerId);
+    console.log('[createNewWorker] Redirecting to session:', workerId);
     redirect(`/sessions/${workerId}`);
   });

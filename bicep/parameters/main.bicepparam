@@ -352,7 +352,6 @@ apt-get install -y nodejs
 
 # Install Azure CLI
 curl -sL https://aka.ms/InstallAzureCLIDeb | bash
-az login --identity
 
 # Install GitHub CLI
 (type -p wget >/dev/null || (apt update && apt-get install wget -y)) \
@@ -465,8 +464,8 @@ STARTEOF
 chmod +x /opt/scripts/start-app.sh
 chown azureuser:azureuser /opt/scripts/start-app.sh
 
-# Cache worker files
-sudo -u azureuser bash -c "NO_START=true /opt/scripts/start-app.sh"
+# Note: Source files will be downloaded on first VM boot via start-app.sh
+# (skipped during image build as managed identity is not available)
 
 # Create systemd service
 cat << 'SERVICEEOF' > /etc/systemd/system/myapp.service
