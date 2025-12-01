@@ -11,7 +11,7 @@ const resourceGroupName = process.env.AZURE_RESOURCE_GROUP_NAME || '';
 const vmImageId = process.env.AZURE_VM_IMAGE_ID || '';
 const vmSize = process.env.AZURE_VM_SIZE || 'Standard_D2s_v3';
 const subnetId = process.env.AZURE_VM_SUBNET_ID || '';
-const userAssignedIdentityId = process.env.AZURE_CLIENT_ID || '';
+const userAssignedIdentityId = process.env.AZURE_USER_ASSIGNED_IDENTITY_ID || '';
 
 function logEnvDiagnostics() {
   console.log('[worker-manager/env] SUBSCRIPTION_ID set:', !!subscriptionId);
@@ -19,7 +19,7 @@ function logEnvDiagnostics() {
   console.log('[worker-manager/env] VM_IMAGE_ID:', vmImageId || '(empty)');
   console.log('[worker-manager/env] VM_SIZE:', vmSize);
   console.log('[worker-manager/env] SUBNET_ID set:', !!subnetId);
-  console.log('[worker-manager/env] AZURE_CLIENT_ID set:', !!userAssignedIdentityId);
+  console.log('[worker-manager/env] AZURE_USER_ASSIGNED_IDENTITY_ID set:', !!userAssignedIdentityId);
 }
 
 let computeClient: ComputeManagementClient | null = null;
