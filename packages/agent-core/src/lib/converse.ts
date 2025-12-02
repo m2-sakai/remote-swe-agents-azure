@@ -91,13 +91,22 @@ export const azureOpenAIConverse = async (
 
     const { processedInput, thinkingBudget } = preProcessInput(input, modelType, maxTokensExceededCount);
 
+    // Determine which token parameter to use based on model
+    const useMaxCompletionTokens = modelType === 'gpt-5-mini' || modelType === 'o4-mini';
+    const tokenParams = useMaxCompletionTokens
+      ? { max_completion_tokens: processedInput.maxTokens }
+      : { max_tokens: processedInput.maxTokens };
+
+    // gpt-5-mini and o4-mini only support temperature = 1
+    const temperature = modelType === 'gpt-5-mini' || modelType === 'o4-mini' ? 1 : (processedInput.temperature ?? 0.7);
+
     const response = (await client.chat.completions.create({
       model: modelConfig.deploymentName || modelConfig.modelId,
       messages: processedInput.messages,
       tools: processedInput.tools,
       tool_choice: processedInput.toolChoice,
-      temperature: processedInput.temperature ?? 0.7,
-      max_tokens: processedInput.maxTokens,
+      temperature,
+      ...tokenParams,
     })) as unknown as ConverseResponse;
 
     // Track token usage for analytics

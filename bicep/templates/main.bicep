@@ -512,6 +512,7 @@ module openAIPrivateEndpointModule '../modules/private-endpoint/pep_module.bicep
     pdzModule
   ]
 }
+@batchSize(1)
 module openAIDeploymentModule '../modules/cognitive-services/cs_add-deployment_module.bicep' = [
   for deployment in deployments: {
     name: deployment.deploymentName
