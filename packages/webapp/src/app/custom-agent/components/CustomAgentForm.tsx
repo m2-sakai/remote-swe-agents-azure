@@ -67,7 +67,7 @@ export default function CustomAgentForm({ availableTools, editingAgent, onSucces
         id: editingAgent?.SK,
         name: editingAgent?.name ?? '',
         description: editingAgent?.description ?? '',
-        defaultModel: editingAgent?.defaultModel ?? 'gpt-4o',
+        defaultModel: editingAgent?.defaultModel ?? 'gpt-5-mini',
         systemPrompt: editingAgent?.systemPrompt ?? '',
         tools: editingAgent?.tools ?? [],
         mcpConfig: editingAgent?.mcpConfig ?? JSON.stringify(EmptyMcpConfig, undefined, 2),

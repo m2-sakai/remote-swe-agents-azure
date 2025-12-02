@@ -36,7 +36,7 @@ export default async function NewSessionPage() {
       id: 'general',
       PK: 'global-config',
       SK: 'general',
-      modelOverride: 'gpt-4o',
+      modelOverride: 'gpt-5-mini',
       enableLinkInPr: false,
       updatedAt: 0,
     };
