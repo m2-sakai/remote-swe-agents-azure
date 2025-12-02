@@ -486,6 +486,8 @@ param openAIPrivateLinkServiceGroupIds array
 param openAIPrivateEndpointSubnetName string
 @description('Azure OpenAI用プライベートDNSゾーンの情報')
 param openAIPrivateDnsZoneName string
+@description('デプロイモデル一覧')
+param deployments array
 module openAIModule '../modules/cognitive-services/cs_module.bicep' = {
   name: take(openAIAccountName, 64)
   params: {
@@ -510,16 +512,20 @@ module openAIPrivateEndpointModule '../modules/private-endpoint/pep_module.bicep
     pdzModule
   ]
 }
-module openAIDeploymentModule '../modules/cognitive-services/cs_add-deployment_module.bicep' = {
-  name: 'gpt-4o-deployment'
-  params: {
-    openAIAccountName: openAIAccountName
-    deploymentName: 'gpt-4o'
+module openAIDeploymentModule '../modules/cognitive-services/cs_add-deployment_module.bicep' = [
+  for deployment in deployments: {
+    name: deployment.deploymentName
+    params: {
+      openAIAccountName: openAIAccountName
+      deploymentName: deployment.deploymentName
+      modelName: deployment.modelName
+      modelVersion: deployment.modelVersion
+    }
+    dependsOn: [
+      openAIModule
+    ]
   }
-  dependsOn: [
-    openAIModule
-  ]
-}
+]
 module openAIAddRoleModule '../modules/cognitive-services/cs_add-role_module.bicep' = {
   name: '${take(openAIAccountName, 40)}_AddRole'
   params: {
@@ -566,9 +572,9 @@ module galleryAddImageDefinitionModule '../modules/compute-gallery/gal_add-image
 // Image Builder
 @description('Image Template の名前')
 @minLength(1)
-param imageTemplateName string = 'worker-template'
+param imageTemplateName string
 @description('Image Version')
-param imageVersion string = '1.0.0'
+param imageVersion string
 @description('VM用サブネットの名前')
 param vmSubnetName string
 @description('セットアップスクリプト')
@@ -590,7 +596,7 @@ module imageTemplateModule '../modules/image-builder/it_module.bicep' = {
   }
   dependsOn: [
     managedIdentityAddRoleModule
-    virtualNetworkModule
+    subnetModules
     galleryAddImageDefinitionModule
   ]
 }

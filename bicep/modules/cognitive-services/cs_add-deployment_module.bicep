@@ -7,13 +7,10 @@ param openAIAccountName string
 param deploymentName string
 
 @description('モデル名')
-@allowed([
-  'gpt-4o'
-])
-param modelName string = 'gpt-4o'
+param modelName string
 
 @description('モデルバージョン')
-param modelVersion string = '2024-11-20'
+param modelVersion string
 
 @description('モデルフォーマット')
 @allowed(['OpenAI'])
@@ -21,7 +18,7 @@ param modelFormat string = 'OpenAI'
 
 @description('SKU名')
 @allowed(['Standard', 'GlobalStandard'])
-param skuName string = 'Standard'
+param skuName string = 'GlobalStandard'
 
 @description('容量（TPM: Tokens Per Minute in thousands）')
 @minValue(1)

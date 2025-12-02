@@ -10,7 +10,7 @@ param tag = {
 }
 
 // マネージドID
-param userAssignedIdentityName = 'm2-sakai-je-ID-99'
+param userAssignedIdentityName = 'm2-sakai-je-ID-90'
 
 // Log Analytics / Application Insights
 param logAnalyticsWorkspaceName = 'm2-sakai-je-LOGANA-01'
@@ -151,7 +151,7 @@ param containerRegistryName = 'm2sakaijeacr01'
 param skuName = 'Basic'
 
 // Key Vault
-param keyVaultName = 'm2-sakai-je-KV-98'
+param keyVaultName = 'm2-sakai-je-KV-90'
 param kvPrivateEndpointName = 'm2-sakai-je-PEP-KV-01'
 param kvPrivateLinkServiceGroupIds = [
   'vault'
@@ -301,6 +301,28 @@ param openAIPrivateLinkServiceGroupIds = [
 ]
 param openAIPrivateEndpointSubnetName = 'OpenAI-sub-3_0'
 param openAIPrivateDnsZoneName = 'privatelink.openai.azure.com'
+param deployments = [
+  {
+    deploymentName: 'gpt-4o'
+    modelName: 'gpt-4o'
+    modelVersion: '2024-11-20'
+  }
+  {
+    deploymentName: 'gpt-4.1'
+    modelName: 'gpt-4.1'
+    modelVersion: '2025-04-14'
+  }
+  {
+    deploymentName: 'gpt-5-mini'
+    modelName: 'gpt-5-mini'
+    modelVersion: '2025-08-07'
+  }
+  {
+    deploymentName: 'o4-mini'
+    modelName: 'o4-mini'
+    modelVersion: '2025-04-16'
+  }
+]
 
 // Gallery
 param galleryName = 'm2_sakai_je_remotesweagent_gallery'
@@ -403,6 +425,7 @@ download_fresh_files() {
   rm -rf ./{*,.*} 2>/dev/null || echo "Cleaning up existing files"
   
   # Download from Blob Storage using Managed Identity
+  az login --identity
   az storage blob download \
     --account-name m2sakaijestorage01 \
     --container-name worker-source \
@@ -425,6 +448,7 @@ download_fresh_files() {
 }
 
 # Get current ETag from Blob Storage
+az login --identity
 CURRENT_ETAG=$(az storage blob show \
   --account-name m2sakaijestorage01 \
   --container-name worker-source \
@@ -490,6 +514,7 @@ Environment=AZURE_WEB_PUBSUB_ENDPOINT=https://m2-sakai-je-WPS-01.webpubsub.azure
 Environment=AZURE_COSMOS_ENDPOINT=https://m2-sakai-je-cosmos-01.documents.azure.com
 Environment=AZURE_OPENAI_ENDPOINT=https://m2-sakai-je-openai-01.openai.azure.com
 Environment=AZURE_CLIENT_ID=0e7bc110-c9e7-470c-b387-550321a0d73c
+Environment=GITHUB_PERSONAL_ACCESS_TOKEN=YOUR_GITHUB_PAT_HERE
 
 [Install]
 WantedBy=multi-user.target
