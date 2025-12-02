@@ -53,7 +53,7 @@ export const getPreferences = async (): Promise<GlobalPreferences> => {
         id: ITEM_ID,
         PK: PARTITION_KEY,
         SK: ITEM_ID,
-        modelOverride: 'gpt-4o',
+        modelOverride: 'gpt-5-mini',
         enableLinkInPr: false,
         updatedAt: 0,
       });
@@ -71,7 +71,7 @@ export const getPreferences = async (): Promise<GlobalPreferences> => {
         id: ITEM_ID,
         PK: PARTITION_KEY,
         SK: ITEM_ID,
-        modelOverride: 'gpt-4o',
+        modelOverride: 'gpt-5-mini',
         enableLinkInPr: false,
         updatedAt: 0,
       });

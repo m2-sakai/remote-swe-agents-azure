@@ -5,7 +5,7 @@ export const globalPreferencesSchema = z.object({
   id: z.string().default('general'),
   PK: z.literal('global-config'),
   SK: z.literal('general'),
-  modelOverride: modelTypeSchema.default('gpt-4o'),
+  modelOverride: modelTypeSchema.default('gpt-5-mini'),
   enableLinkInPr: z.boolean().default(false),
   updatedAt: z.number().default(0),
 });

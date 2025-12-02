@@ -88,7 +88,7 @@ Use the same language that was used in the conversation.
 Messages: ${message}
     `.trim();
 
-    const { response } = await azureOpenAIConverse(workerId, ['gpt-4o'], {
+    const { response } = await azureOpenAIConverse(workerId, ['gpt-4o', 'gpt-4.1', 'o4-mini', 'gpt-5-mini'], {
       maxTokens: 50,
       temperature: 0.8,
       messages: [

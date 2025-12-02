@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const modelTypeList = ['gpt-4o'] as const;
+export const modelTypeList = ['gpt-4o', 'gpt-4.1', 'o4-mini', 'gpt-5-mini'] as const;
 export const modelTypeSchema = z.enum(modelTypeList);
 export type ModelType = z.infer<typeof modelTypeSchema>;
 
@@ -41,6 +41,42 @@ export const modelConfigs: Record<ModelType, z.infer<typeof modelConfigSchema>> 
     toolChoiceSupport: ['auto', 'tool'],
     supportedCriProfiles: ['global', 'us', 'eu', 'apac', 'jp', 'au'],
     pricing: { input: 0.0025, output: 0.01, cacheRead: 0, cacheWrite: 0 },
+  },
+  'gpt-4.1': {
+    name: 'GPT-4.1',
+    modelId: 'gpt-4.1',
+    deploymentName: 'gpt-4.1',
+    maxOutputTokens: 16_384,
+    maxInputTokens: 128_000,
+    cacheSupport: [],
+    reasoningSupport: false,
+    toolChoiceSupport: ['auto', 'tool'],
+    supportedCriProfiles: ['global', 'us', 'eu', 'apac', 'jp', 'au'],
+    pricing: { input: 0.0025, output: 0.01, cacheRead: 0, cacheWrite: 0 },
+  },
+  'o4-mini': {
+    name: 'o4-mini',
+    modelId: 'o4-mini',
+    deploymentName: 'o4-mini',
+    maxOutputTokens: 16_384,
+    maxInputTokens: 128_000,
+    cacheSupport: [],
+    reasoningSupport: true,
+    toolChoiceSupport: ['auto', 'tool'],
+    supportedCriProfiles: ['global', 'us', 'eu', 'apac', 'jp', 'au'],
+    pricing: { input: 0.0025, output: 0.01, cacheRead: 0, cacheWrite: 0 },
+  },
+  'gpt-5-mini': {
+    name: 'GPT-5 Mini',
+    modelId: 'gpt-5-mini',
+    deploymentName: 'gpt-5-mini',
+    maxOutputTokens: 16_384,
+    maxInputTokens: 128_000,
+    cacheSupport: [],
+    reasoningSupport: false,
+    toolChoiceSupport: ['auto', 'tool'],
+    supportedCriProfiles: ['global', 'us', 'eu', 'apac', 'jp', 'au'],
+    pricing: { input: 0.001, output: 0.004, cacheRead: 0, cacheWrite: 0 },
   },
 };
 
