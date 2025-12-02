@@ -7,11 +7,13 @@ import { updateAgentStatusWithEvent } from './common/status';
 import { refreshSession } from './common/refresh-session';
 import { WebPubSubClient } from '@azure/web-pubsub-client';
 import { WebPubSubServiceClient } from '@azure/web-pubsub';
+import { DefaultAzureCredential } from '@azure/identity';
 
 Object.assign(global, { WebSocket: require('ws') });
 
-const webPubSubConnectionString = process.env.WEB_PUBSUB_CONNECTION_STRING;
-const webPubSubHub = process.env.WEB_PUBSUB_HUB || 'worker-events';
+const webPubSubEndpoint = process.env.AZURE_WEB_PUBSUB_ENDPOINT;
+const webPubSubHub = 'remoteswehub';
+const credential = new DefaultAzureCredential();
 
 class ConverseSessionTracker {
   private sessions: { isFinished: boolean; cancellationToken: CancellationToken }[] = [];
@@ -92,10 +94,15 @@ export const main = async (workerId: string) => {
   // Azure Web PubSub を使用したリアルタイムイベント購読
   let webPubSubClient: WebPubSubClient | null = null;
 
-  if (webPubSubConnectionString) {
+  if (webPubSubEndpoint) {
     try {
+      // マネージドIDでトークンを取得
+      console.log('[worker/entry] Requesting MSI token for WebPubSub scope');
+      const tokenResponse = await credential.getToken('https://webpubsub.azure.com/.default');
+      console.log('[worker/entry] Token acquired');
+
       // Web PubSubサービスクライアントを使用してクライアントアクセスURLを生成
-      const serviceClient = new WebPubSubServiceClient(webPubSubConnectionString, webPubSubHub);
+      const serviceClient = new WebPubSubServiceClient(webPubSubEndpoint, credential, webPubSubHub);
       const clientAccessUrl = await serviceClient.getClientAccessToken({
         userId: workerId,
         roles: [`webpubsub.joinLeaveGroup.worker-${workerId}`, 'webpubsub.sendToGroup'],
@@ -159,7 +166,7 @@ export const main = async (workerId: string) => {
       console.log('Continuing without real-time event support');
     }
   } else {
-    console.warn('WEB_PUBSUB_CONNECTION_STRING not set. Real-time events disabled.');
+    console.warn('AZURE_WEB_PUBSUB_ENDPOINT not set. Real-time events disabled.');
   }
 
   setKillTimer(workerId);

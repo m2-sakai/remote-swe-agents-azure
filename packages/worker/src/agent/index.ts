@@ -49,23 +49,53 @@ import { DefaultAgent } from './lib/default-agent';
 import { EmptyMcpConfig, mcpConfigSchema } from '@remote-swe-agents-azure/agent-core/schema';
 
 const agentLoop = async (workerId: string, cancellationToken: CancellationToken) => {
+  console.log('[agentLoop] Starting agent loop', { workerId });
+
+  console.log('[agentLoop] Fetching session');
   const session = await getSession(workerId);
+  console.log('[agentLoop] Fetching custom agent', { customAgentId: session?.customAgentId });
   const customAgent = (await getCustomAgent(session?.customAgentId)) ?? DefaultAgent;
+  console.log('[agentLoop] Fetching global preferences');
   const globalPreferences = await getPreferences();
+
+  console.log('[agentLoop] Parsing MCP config');
   let mcpConfig = EmptyMcpConfig;
   {
-    const { data, error } = mcpConfigSchema.safeParse(JSON.parse(customAgent.mcpConfig));
-    if (error) {
+    try {
+      console.log('[agentLoop] mcpConfig raw value:', {
+        type: typeof customAgent.mcpConfig,
+        length: customAgent.mcpConfig?.length,
+        first200: customAgent.mcpConfig?.substring(0, 200),
+      });
+
+      const parsedJson = JSON.parse(customAgent.mcpConfig);
+      const { data, error } = mcpConfigSchema.safeParse(parsedJson);
+
+      if (error) {
+        console.error('[agentLoop] MCP config schema validation failed:', error);
+        sendSystemMessage(
+          workerId,
+          `Invalid mcp config: ${error}. Please check the agent configuration for ${customAgent.name}`
+        );
+      } else {
+        mcpConfig = data;
+      }
+    } catch (parseError) {
+      console.error('[agentLoop] Failed to parse mcpConfig JSON:', {
+        error: parseError,
+        errorMessage: (parseError as Error).message,
+        mcpConfigSample: customAgent.mcpConfig?.substring(0, 300),
+      });
       sendSystemMessage(
         workerId,
-        `Invalid mcp config: ${error}. Please check the agent configuration for ${customAgent.name}`
+        `Failed to parse MCP config JSON: ${(parseError as Error).message}. The configuration may contain invalid JSON syntax.`
       );
-    } else {
-      mcpConfig = data;
     }
   }
+  console.log('[agentLoop] MCP config parsing complete');
 
   // For session title generation
+  console.log('[agentLoop] Fetching conversation history');
   const { items: allItems } = await pRetry(
     async (attemptCount) => {
       const res = await getConversationHistory(workerId);
@@ -78,7 +108,9 @@ const agentLoop = async (workerId: string, cancellationToken: CancellationToken)
     { retries: 5, minTimeout: 100, maxTimeout: 1000 }
   );
   if (!allItems) return;
+  console.log('[agentLoop] Conversation history fetched', { itemCount: allItems.length });
 
+  console.log('[agentLoop] Building system prompt');
   const baseSystemPrompt = customAgent.systemPrompt || DefaultAgent.systemPrompt;
 
   let systemPrompt = baseSystemPrompt;
@@ -117,14 +149,19 @@ const agentLoop = async (workerId: string, cancellationToken: CancellationToken)
     }
   };
   await tryAppendRepositoryKnowledge();
+  console.log('[agentLoop] System prompt built');
 
+  console.log('[agentLoop] Refreshing session');
   await refreshSession(workerId);
+  console.log('[agentLoop] Session refreshed');
 
   let modelOverride = allItems.findLast((i) => i.modelOverride)?.modelOverride;
   if (!modelOverride) {
     modelOverride = (await getPreferences()).modelOverride;
   }
+  console.log('[agentLoop] Model override', { modelOverride });
 
+  console.log('[agentLoop] Configuring tools');
   const tools = [
     ciTool,
     cloneRepositoryTool,
@@ -160,8 +197,11 @@ const agentLoop = async (workerId: string, cancellationToken: CancellationToken)
   if (toolConfig.tools!.length == 1) {
     toolConfig = undefined;
   }
+  console.log('[agentLoop] Tools configured', { toolCount: toolConfig?.tools?.length ?? 0 });
 
+  console.log('[agentLoop] Applying initial filtering');
   const { items: initialItems, messages: initialMessages } = await middleOutFiltering(allItems);
+  console.log('[agentLoop] Initial filtering complete', { itemCount: initialItems.length });
   // usually cache was created with the last user message (including toolResult), so try to get at(-3) here.
   // at(-1) is usually the latest user message received, at(-2) is usually the last assistant output
   let firstCachePoint = initialItems.length > 2 ? initialItems.length - 3 : initialItems.length - 1;
@@ -174,8 +214,13 @@ const agentLoop = async (workerId: string, cancellationToken: CancellationToken)
   let maxTokensExceededCount = 0;
 
   let lastReportedTime = 0;
+  console.log('[agentLoop] Starting main conversation loop');
   while (true) {
-    if (cancellationToken.isCancelled) break;
+    if (cancellationToken.isCancelled) {
+      console.log('[agentLoop] Cancellation token triggered, breaking loop');
+      break;
+    }
+    console.log('[agentLoop] Loop iteration start', { appendedItemsCount: appendedItems.length });
     const items = [...initialItems, ...appendedItems];
 
     // Check if token count exceeds the threshold (95% of maxInputTokens)
@@ -211,6 +256,7 @@ const agentLoop = async (workerId: string, cancellationToken: CancellationToken)
     // Will hold the detected budget from bedrockConverse
     let detectedBudget: number | undefined;
 
+    console.log('[agentLoop] Calling Bedrock API', { messageCount: messages.length, totalTokens: totalTokenCount });
     const res = await pRetry(
       async () => {
         try {
@@ -269,13 +315,14 @@ const agentLoop = async (workerId: string, cancellationToken: CancellationToken)
       lastItem.tokenCount = tokenCount;
     }
 
-    console.log(JSON.stringify(res.usage));
+    console.log('[agentLoop] API response received', { stopReason: res.stopReason, usage: res.usage });
     const outputTokenCount = res.usage?.outputTokens ?? 0;
 
     // Update session cost in DynamoDB with token usage from DynamoDB
     await updateSessionCost(workerId);
 
     if (res.stopReason == 'tool_use') {
+      console.log('[agentLoop] Processing tool use');
       if (res.output?.message == null) {
         throw new Error('output is null');
       }
@@ -419,10 +466,12 @@ const agentLoop = async (workerId: string, cancellationToken: CancellationToken)
       const responseTextWithoutThinking = responseText.replace(/<thinking>[\s\S]*?<\/thinking>/g, '');
       await sendSystemMessage(workerId, responseTextWithoutThinking, true);
       conversation += `Assistant: ${responseTextWithoutThinking}\n`;
+      console.log('[agentLoop] End reason reached, breaking loop');
       break;
     }
   }
 
+  console.log('[agentLoop] Attempting to generate session title');
   try {
     const session = await getSession(workerId);
     // Generate title using the full conversation context
@@ -438,9 +487,12 @@ const agentLoop = async (workerId: string, cancellationToken: CancellationToken)
     console.error(`Error generating session title for ${workerId}:`, error);
     // Continue even if title generation fails
   }
+
+  console.log('[agentLoop] Agent loop completed', { workerId });
 };
 
 export const onMessageReceived = async (workerId: string, cancellationToken: CancellationToken) => {
+  console.log('[onMessageReceived] Starting', { workerId });
   // Update agent status to 'working' when starting a turn
   await updateAgentStatusWithEvent(workerId, 'working');
 

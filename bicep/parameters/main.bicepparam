@@ -487,6 +487,8 @@ Environment=WORKER_RUNTIME=vm
 Environment=AZURE_REGION=japaneast
 Environment=AZURE_STORAGE_ACCOUNT_NAME=m2sakaijestorage01
 Environment=AZURE_WEB_PUBSUB_ENDPOINT=https://m2-sakai-je-WPS-01.webpubsub.azure.com
+Environment=AZURE_COSMOS_ENDPOINT=https://m2-sakai-je-cosmos-01.documents.azure.com
+Environment=AZURE_OPENAI_ENDPOINT=https://m2-sakai-je-openai-01.openai.azure.com
 Environment=AZURE_CLIENT_ID=0e7bc110-c9e7-470c-b387-550321a0d73c
 
 [Install]

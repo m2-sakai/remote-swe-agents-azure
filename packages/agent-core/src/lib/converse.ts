@@ -1,4 +1,5 @@
 import { AzureOpenAI } from 'openai';
+import { DefaultAzureCredential } from '@azure/identity';
 import { getContainer } from './azure/cosmos';
 import { modelConfigs, ModelType } from '../schema';
 import type { ChatCompletionMessageParam, ChatCompletionTool } from 'openai/resources/chat/completions';
@@ -44,24 +45,31 @@ export interface ConverseResponse {
   };
 }
 
-let openAIClient: AzureOpenAI | null = null;
+const credential = new DefaultAzureCredential();
 
-const getOpenAIClient = () => {
-  if (!openAIClient) {
-    const endpoint = process.env.AZURE_OPENAI_ENDPOINT;
-    const apiKey = process.env.AZURE_OPENAI_API_KEY;
+const getOpenAIClient = async () => {
+  const endpoint = process.env.AZURE_OPENAI_ENDPOINT;
 
-    if (!endpoint || !apiKey) {
-      throw new Error('AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_API_KEY must be set');
-    }
-
-    openAIClient = new AzureOpenAI({
-      endpoint,
-      apiKey,
-      apiVersion: '2024-08-01-preview',
-    });
+  if (!endpoint) {
+    throw new Error('AZURE_OPENAI_ENDPOINT must be set');
   }
-  return openAIClient;
+
+  console.log('[converse] Requesting MSI token for Azure OpenAI');
+  const tokenResponse = await credential.getToken('https://cognitiveservices.azure.com/.default');
+  console.log('[converse] Token acquired for OpenAI', { expiresOnTimestamp: tokenResponse.expiresOnTimestamp });
+
+  // Create a new client with fresh token each time
+  // The Azure OpenAI SDK will handle token refresh internally
+  const client = new AzureOpenAI({
+    endpoint,
+    azureADTokenProvider: async () => {
+      const token = await credential.getToken('https://cognitiveservices.azure.com/.default');
+      return token.token;
+    },
+    apiVersion: '2024-08-01-preview',
+  });
+
+  return client;
 };
 
 export const azureOpenAIConverse = async (
@@ -77,7 +85,7 @@ export const azureOpenAIConverse = async (
   try {
     const modelType = chooseRandom(modelTypes);
     const modelConfig = modelConfigs[modelType];
-    const client = getOpenAIClient();
+    const client = await getOpenAIClient();
 
     console.log(`Using Azure OpenAI model: ${modelConfig.modelId}`);
 
