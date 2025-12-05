@@ -10,8 +10,6 @@ const name = 'report_progress';
 export const reportProgressTool: ToolDefinition<z.infer<typeof inputSchema>> = {
   name,
   handler: async (input: z.infer<typeof inputSchema>) => {
-    // This tool simply logs progress and returns acknowledgment
-    console.log(`Progress report: ${input.progress}`);
     return 'Progress report received. Continue with your work.';
   },
   schema: inputSchema,

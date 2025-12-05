@@ -11,7 +11,6 @@ app.use(express.json());
 
 app.post('/invocations', async (req, res) => {
   const body = req.body;
-  console.log(body);
   const sessionId = body.sessionId;
   const tracker = await main(sessionId);
   if (tracker) {
@@ -33,6 +32,4 @@ app.get('/ping', (_req, res) => {
 });
 
 const port = 8080;
-app.listen(port, () => {
-  console.log(`Agent server listening on 0.0.0.0:${port}`);
-});
+app.listen(port);

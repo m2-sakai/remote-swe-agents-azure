@@ -37,7 +37,7 @@ const getLatestRunResult = async (input: { owner: string; repo: string; pullRequ
         return `CI failed with errors! <detail>${result}</detail>\n\nHere's the result of gh run view --log-failed:<log>${logs}</logs>`;
       }
     } catch (e) {
-      console.log(e);
+      console.error(e);
       return `getLatestRunResult failed: ${(e as Error).message}`;
     }
   }

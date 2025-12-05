@@ -25,8 +25,7 @@ export const DefaultWorkingDirectory = join(homedir(), `.remote-swe-workspace`);
 spawn('mkdir', ['-p', DefaultWorkingDirectory]);
 
 export const executeCommand = async (command: string, cwd?: string, timeoutMs = 60000, longRunningProcess = false) => {
-  // Ignore error when github token is not available
-  const token = await authorizeGitHubCli().catch((e) => console.log(e));
+  const token = await authorizeGitHubCli().catch(console.error);
 
   cwd = cwd ?? DefaultWorkingDirectory;
 
@@ -38,7 +37,6 @@ export const executeCommand = async (command: string, cwd?: string, timeoutMs = 
     suggestion?: string;
     isLongRunning?: boolean;
   }>((resolve) => {
-    console.log(`Executing command: ${command} in ${cwd}`);
     const childProcess = spawn(command, [], {
       cwd,
       shell: true,
@@ -76,7 +74,6 @@ export const executeCommand = async (command: string, cwd?: string, timeoutMs = 
     if (longRunningProcess) {
       longRunningTimer = setTimeout(() => {
         if (!hasExited) {
-          console.log(`Returning control to agent after 10 seconds for long-running process: ${command}`);
           resolve({
             stdout: truncate(stdout, 40e3),
             stderr: truncate(stderr),

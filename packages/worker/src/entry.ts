@@ -29,8 +29,8 @@ class ConverseSessionTracker {
         session.isFinished = true;
       })
       .catch((e) => {
-        sendSystemMessage(this.workerId, `An error occurred: ${e}`).catch((e) => console.log(e));
-        console.log(e);
+        sendSystemMessage(this.workerId, `An error occurred: ${e}`).catch(console.error);
+        console.error(e);
       })
       .finally(() => {
         restartKillTimer(this.workerId, restartToken);
@@ -46,8 +46,8 @@ class ConverseSessionTracker {
         session.isFinished = true;
       })
       .catch((e) => {
-        sendSystemMessage(this.workerId, `An error occurred: ${e}`).catch((e) => console.log(e));
-        console.log(e);
+        sendSystemMessage(this.workerId, `An error occurred: ${e}`).catch(console.error);
+        console.error(e);
       })
       .finally(() => {
         restartKillTimer(this.workerId, restartToken);
@@ -63,7 +63,6 @@ class ConverseSessionTracker {
     for (const task of this.sessions) {
       if (task.isFinished) continue;
       task.cancellationToken.cancel(callback);
-      console.log(`cancelled an ongoing converse session.`);
     }
     // remove finished sessions
     for (let i = this.sessions.length - 1; i >= 0; i--) {
@@ -84,7 +83,7 @@ class ConverseSessionTracker {
 const isStarted: { [key: string]: boolean } = {};
 export const main = async (workerId: string) => {
   if (isStarted[workerId]) {
-    console.log(`The worker ${workerId} is already started.`);
+    console.warn(`The worker ${workerId} is already started.`);
     return;
   }
 
@@ -97,9 +96,7 @@ export const main = async (workerId: string) => {
   if (webPubSubEndpoint) {
     try {
       // マネージドIDでトークンを取得
-      console.log('[worker/entry] Requesting MSI token for WebPubSub scope');
       const tokenResponse = await credential.getToken('https://webpubsub.azure.com/.default');
-      console.log('[worker/entry] Token acquired');
 
       // Web PubSubサービスクライアントを使用してクライアントアクセスURLを生成
       const serviceClient = new WebPubSubServiceClient(webPubSubEndpoint, credential, webPubSubHub);
@@ -113,38 +110,27 @@ export const main = async (workerId: string) => {
 
       // ブロードキャストメッセージを受信
       webPubSubClient.on('server-message', (e: any) => {
-        console.log('[worker/entry] Received broadcast message:', JSON.stringify(e.message, null, 2));
-
-        // Check if this is a message for our worker
         const messageChannel = e.message.data?.channel;
         const expectedChannel = `worker/${workerId}`;
 
         if (messageChannel === expectedChannel) {
-          console.log('[worker/entry] Processing broadcast message for this worker');
           try {
             const { data: event, error, success } = workerEventSchema.safeParse(e.message.data.data);
             if (!success || error) {
-              console.log(`[worker/entry] Invalid worker event schema in broadcast. Ignoring...`, {
-                messageData: JSON.stringify(e.message.data.data),
-                error: JSON.stringify(error, null, 2),
-              });
+              console.error('[worker/entry] Invalid worker event schema in broadcast', { error });
               return;
             }
 
-            console.log('[worker/entry] Processing worker event from broadcast:', { type: event.type });
             const type = event.type;
             if (type === 'onMessageReceived') {
-              console.log('[worker/entry] Triggering onMessageReceived from broadcast');
               tracker.cancelCurrentSessions();
               tracker.startOnMessageReceived();
             } else if (type === 'forceStop') {
-              console.log('[worker/entry] Triggering forceStop from broadcast');
               tracker.cancelCurrentSessions(async () => {
                 await updateAgentStatusWithEvent(workerId, 'pending');
                 await sendSystemMessage(workerId, 'Agent work was stopped.');
               });
             } else if (type === 'sessionUpdated') {
-              console.log('[worker/entry] Triggering sessionUpdated from broadcast');
               refreshSession(workerId).catch((err) => console.error('Error refreshing session:', err));
             }
           } catch (error) {
@@ -155,31 +141,23 @@ export const main = async (workerId: string) => {
 
       // グループメッセージを受信（特定のworker向け）
       webPubSubClient.on('group-message', (e: any) => {
-        console.log('[worker/entry] Received group message:', JSON.stringify(e.message, null, 2));
         try {
           const { data: event, error, success } = workerEventSchema.safeParse(e.message.data);
           if (!success || error) {
-            console.log(`[worker/entry] Invalid worker event schema. Ignoring...`, {
-              messageData: JSON.stringify(e.message.data),
-              error: JSON.stringify(error, null, 2),
-            });
+            console.error('[worker/entry] Invalid worker event schema', { error });
             return;
           }
 
-          console.log('[worker/entry] Processing worker event:', { type: event.type });
           const type = event.type;
           if (type === 'onMessageReceived') {
-            console.log('[worker/entry] Triggering onMessageReceived');
             tracker.cancelCurrentSessions();
             tracker.startOnMessageReceived();
           } else if (type === 'forceStop') {
-            console.log('[worker/entry] Triggering forceStop');
             tracker.cancelCurrentSessions(async () => {
               await updateAgentStatusWithEvent(workerId, 'pending');
               await sendSystemMessage(workerId, 'Agent work was stopped.');
             });
           } else if (type === 'sessionUpdated') {
-            console.log('[worker/entry] Triggering sessionUpdated');
             refreshSession(workerId).catch((err) => console.error('Error refreshing session:', err));
           }
         } catch (error) {
@@ -189,24 +167,18 @@ export const main = async (workerId: string) => {
 
       // 接続
       await webPubSubClient.start();
-      console.log(`Connected to Web PubSub hub: ${webPubSubHub} as user: ${workerId}`);
-
-      // workerIdグループに参加（worker固有のメッセージを受信するため）
       await webPubSubClient.joinGroup(`worker/${workerId}`);
-      console.log(`Joined group: worker/${workerId}`);
 
       // プロセス終了時に接続を閉じる
       const cleanup = async () => {
         if (webPubSubClient) {
           await webPubSubClient.stop();
-          console.log('Web PubSub connection closed');
         }
       };
       process.on('SIGINT', cleanup);
       process.on('SIGTERM', cleanup);
     } catch (error) {
       console.error('Failed to initialize Web PubSub client:', error);
-      console.log('Continuing without real-time event support');
     }
   } else {
     console.warn('AZURE_WEB_PUBSUB_ENDPOINT not set. Real-time events disabled.');
@@ -222,7 +194,7 @@ export const main = async (workerId: string) => {
     tracker.startResume();
   } catch (e) {
     await sendSystemMessage(workerId, `An error occurred: ${e}`);
-    console.log(e);
+    console.error(e);
   }
 
   return tracker;

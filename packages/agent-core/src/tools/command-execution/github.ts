@@ -19,7 +19,6 @@ export const authorizeGitHubCli = async () => {
     process.env.GITHUB_APP_ID &&
     process.env.GITHUB_APP_INSTALLATION_ID
   ) {
-    console.log(`refreshing token...`);
     const { stdout } = await execAsync(
       `gh-token generate --key ${process.env.GITHUB_APP_PRIVATE_KEY_PATH} --app-id ${process.env.GITHUB_APP_ID} --installation-id ${process.env.GITHUB_APP_INSTALLATION_ID}`
     );
