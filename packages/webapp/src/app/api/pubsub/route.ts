@@ -10,22 +10,10 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET(request: NextRequest) {
   try {
-    console.log('[pubsub/route] Incoming request:', {
-      url: request.url,
-      method: 'GET',
-      time: new Date().toISOString(),
-    });
-
     // 認証セッションからusernameを取得（フォールバックはENVのDEV_USER_ID）
     const session = await getSession();
     const username = session?.account?.username ?? process.env.DEV_USER_ID ?? null;
-    console.log('[pubsub/route] Resolved user:', {
-      hasSession: !!session,
-      username,
-      devFallback: !session && !!process.env.DEV_USER_ID,
-    });
     if (!username) {
-      console.warn('[pubsub/route] Unauthorized: no username');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -38,15 +26,12 @@ export async function GET(request: NextRequest) {
     const hubName = 'remoteswehub';
     const credential = new DefaultAzureCredential();
     const serviceClient = new WebPubSubServiceClient(endpoint, credential, hubName);
-    console.log('[pubsub/route] Client initialized:', { endpoint, hubName });
 
     // Get workerId from query parameter
     const { searchParams } = new URL(request.url);
     const workerId = searchParams.get('workerId');
-    console.log('[pubsub/route] Query params:', { workerId });
 
     if (!workerId) {
-      console.warn('[pubsub/route] Missing workerId');
       return NextResponse.json({ error: 'workerId is required' }, { status: 400 });
     }
 
@@ -55,20 +40,6 @@ export async function GET(request: NextRequest) {
       userId: `webapp-${username}`,
       roles: [`webpubsub.joinLeaveGroup.webapp/worker/${workerId}`, `webpubsub.sendToGroup.webapp/worker/${workerId}`],
       expirationTimeInMinutes: 60,
-    });
-    console.log('[pubsub/route] Token generated:', {
-      baseUrl: token.baseUrl,
-      urlDomain: (() => {
-        try {
-          const u = new URL(token.url);
-          return u.hostname;
-        } catch {
-          return 'n/a';
-        }
-      })(),
-      channelName: `webapp/worker/${workerId}`,
-      expiresInMinutes: 60,
-      userId: `webapp-${username}`,
     });
 
     return NextResponse.json({

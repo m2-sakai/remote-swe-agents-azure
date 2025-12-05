@@ -32,7 +32,6 @@ export const authActionClient = actionClient.use(async ({ next }) => {
   // 開発環境: 認証をスキップ
   if (process.env.SKIP_AUTH === 'true') {
     const devUserId = process.env.DEV_USER_ID || 'dev-user-001';
-    console.log('[DEV MODE] Auth action with dummy user:', devUserId);
     return next({ ctx: { userId: devUserId } });
   }
 

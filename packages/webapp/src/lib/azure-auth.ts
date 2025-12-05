@@ -97,15 +97,6 @@ export async function setSession(sessionData: {
     maxAge: 60 * 60 * 24 * 7, // 7 days
     path: '/',
   });
-
-  console.log('[Auth] Session saved:', {
-    sessionId,
-    hasAccessToken: !!sessionData.accessToken,
-    hasAccount: !!sessionData.account,
-    expiresOn: sessionData.expiresOn,
-    expiresInMinutes: sessionData.expiresOn ? Math.floor((sessionData.expiresOn - Date.now() / 1000) / 60) : 'N/A',
-    isProduction,
-  });
 }
 
 /**

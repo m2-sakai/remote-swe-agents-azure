@@ -37,8 +37,6 @@ export async function sendEvent(channelName: string, payload: unknown) {
       console.error(`Failed to send event: ${response.status} ${response.statusText}`);
       return;
     }
-
-    console.log(`Event sent to channel: ${channelName}`);
   } catch (error) {
     console.error('Failed to send event to Azure Web PubSub:', error);
   }

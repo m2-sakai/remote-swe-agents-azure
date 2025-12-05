@@ -33,14 +33,6 @@ export async function GET(request: NextRequest) {
       expiresOn: tokenResponse.account?.idTokenClaims?.exp || Math.floor(Date.now() / 1000) + 3600,
     };
 
-    console.log('[Callback] Session data created:', {
-      hasAccessToken: !!sessionData.accessToken,
-      hasAccount: !!sessionData.account,
-      userId: tokenResponse.account?.localAccountId || tokenResponse.account?.homeAccountId,
-      username: tokenResponse.account?.username,
-      expiresOn: sessionData.expiresOn,
-    });
-
     // セッションを保存（Cosmos DB + Cookie）
     await setSession(sessionData);
 

@@ -56,7 +56,6 @@ export async function saveSession(
     const container = getContainer(CONTAINER_NAME);
     await container.items.upsert(item);
 
-    console.log('[SessionStore] Session saved:', { sessionId, expiresOn: item.expiresOn });
     return sessionId;
   } catch (error) {
     console.error('[SessionStore] Failed to save session:', error);
@@ -80,7 +79,6 @@ export async function getSession(sessionId: string): Promise<AuthSessionData | n
     // 有効期限チェック
     const now = Math.floor(Date.now() / 1000);
     if (resource.expiresOn && resource.expiresOn < now) {
-      console.log('[SessionStore] Session expired:', { sessionId });
       await deleteSession(sessionId);
       return null;
     }
@@ -122,7 +120,6 @@ export async function updateSession(
 
     // Replace the item
     await container.item(sessionId, PK).replace(updated);
-    console.log('[SessionStore] Session updated:', { sessionId });
   } catch (error) {
     console.error('[SessionStore] Failed to update session:', error);
     throw new Error('Failed to update session');
@@ -137,7 +134,6 @@ export async function deleteSession(sessionId: string): Promise<void> {
   try {
     const container = getContainer(CONTAINER_NAME);
     await container.item(sessionId, PK).delete();
-    console.log('[SessionStore] Session deleted:', { sessionId });
   } catch (error: any) {
     // 404エラーは無視
     if (error.code !== 404) {

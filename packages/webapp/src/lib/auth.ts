@@ -17,8 +17,6 @@ export async function getSession() {
     const devUserId = process.env.DEV_USER_ID || 'dev-user-001';
     const devUserEmail = process.env.DEV_USER_EMAIL || 'dev@example.com';
 
-    console.log('[DEV MODE] Using dummy session:', { userId: devUserId, email: devUserEmail });
-
     return {
       userId: devUserId,
       email: devUserEmail,
