@@ -36,22 +36,7 @@ param infraAppSettings array = []
 param publicNetworkAccess string = 'Enabled'
 
 @description('IP制限のルール')
-param ipSecurityRestrictions array = [
-  {
-    ipAddress: '24.239.147.179/32'
-    action: 'Allow'
-    priority: 100
-    name: 'Allow From NRI 1'
-    description: 'Allow From NRI 1'
-  }
-  {
-    ipAddress: '24.239.147.180/32'
-    action: 'Allow'
-    priority: 101
-    name: 'Allow From NRI 2'
-    description: 'Allow From NRI 2'
-  }
-]
+param ipSecurityRestrictions array = []
 
 @description('SCMのIP制限のルール')
 param scmIpSecurityRestrictions array = []

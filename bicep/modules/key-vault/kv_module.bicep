@@ -17,10 +17,7 @@ param skuName string = 'standard'
 param publicNetworkAccess string = 'Enabled'
 
 @description('許可するIPアドレス')
-param allowIpAddresses array = [
-  '24.239.147.179/32'
-  '24.239.147.180/32'
-]
+param allowIpAddresses array = []
 
 resource keyVault 'Microsoft.KeyVault/vaults@2025-05-01' = {
   name: keyVaultName
